@@ -16,7 +16,7 @@ type Config struct {
 func LoadConfig() *Config {
 	config := Config{
 		Debug:     parseBool("DEBUG", true),
-		AwsRegion: parseString("AWS_REGION", ""),
+		AwsRegion: parseString("AWS_REGION", "us-east-2"),
 		QueueUrl:  parseString("QUEUE_URL", ""),
 	}
 
