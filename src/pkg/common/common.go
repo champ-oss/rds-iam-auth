@@ -7,6 +7,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const SqsMessageBodySeparator = "|"
+const RdsTypeClusterKey = "cluster"
+const RdsTypeInstanceKey = "instance"
+
 // GetAWSConfig Logs in to AWS and return a config
 func GetAWSConfig(region string) aws.Config {
 	log.Infof("Getting AWS Config using region: %s", region)

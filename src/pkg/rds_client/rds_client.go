@@ -2,9 +2,7 @@ package rds_client
 
 import (
 	"context"
-	"github.com/amit7itz/goset"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
-	"github.com/aws/aws-sdk-go-v2/service/rds/types"
 	"github.com/champ-oss/rds-iam-auth/pkg/common"
 	log "github.com/sirupsen/logrus"
 )
@@ -23,8 +21,30 @@ func NewRdsClient(region string, queueUrl string) *RdsClient {
 	}
 }
 
-func (r *RdsClient) getAllDBInstances() []types.DBInstance {
-	var instances []types.DBInstance
+func (r *RdsClient) GetAllDBClusters() []string {
+	var identifiers []string
+
+	log.Infof("getting list of RDS clusters in region: %s", r.region)
+	paginator := rds.NewDescribeDBClustersPaginator(r.rdsClient, &rds.DescribeDBClustersInput{})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(context.TODO())
+		if err != nil {
+			log.Fatalf("failed to get a page, %s", err)
+		}
+		log.Debugf("retrieved %d items", len(page.DBClusters))
+
+		for _, dbCluster := range page.DBClusters {
+			log.Infof("found RDS cluster: %s", *dbCluster.DBClusterIdentifier)
+			identifiers = append(identifiers, *dbCluster.DBClusterIdentifier)
+		}
+	}
+
+	log.Infof("found %d RDS clusters", len(identifiers))
+	return identifiers
+}
+
+func (r *RdsClient) GetAllDBInstances() []string {
+	var identifiers []string
 
 	log.Infof("getting list of RDS instances in region: %s", r.region)
 	paginator := rds.NewDescribeDBInstancesPaginator(r.rdsClient, &rds.DescribeDBInstancesInput{})
@@ -36,28 +56,13 @@ func (r *RdsClient) getAllDBInstances() []types.DBInstance {
 		log.Debugf("retrieved %d items", len(page.DBInstances))
 
 		for _, dbInstance := range page.DBInstances {
-			log.Debug(*dbInstance.DBInstanceArn)
-		}
-
-		instances = append(instances, page.DBInstances...)
-	}
-	return instances
-}
-
-func (r *RdsClient) GetAllDatabases() []string {
-	identifiers := goset.NewSet[string]()
-
-	for _, instance := range r.getAllDBInstances() {
-
-		if instance.DBClusterIdentifier != nil {
-			log.Debugf("found cluster: %s", *instance.DBClusterIdentifier)
-			identifiers.Add(*instance.DBClusterIdentifier)
-		} else {
-			log.Debugf("found instance: %s", *instance.DBInstanceIdentifier)
-			identifiers.Add(*instance.DBInstanceIdentifier)
+			if dbInstance.DBClusterIdentifier == nil {
+				log.Infof("found RDS instance: %s", *dbInstance.DBInstanceIdentifier)
+				identifiers = append(identifiers, *dbInstance.DBInstanceIdentifier)
+			}
 		}
 	}
-	log.Infof("found %d RDS clusters and instances", identifiers.Len())
 
-	return identifiers.Items()
+	log.Infof("found %d RDS instances", len(identifiers))
+	return identifiers
 }

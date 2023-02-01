@@ -12,7 +12,6 @@ require (
 )
 
 require (
-	github.com/amit7itz/goset v1.2.1 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.10 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.21 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.27 // indirect
