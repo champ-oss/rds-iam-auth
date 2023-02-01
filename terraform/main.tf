@@ -26,3 +26,40 @@ module "lambda" {
   tags             = merge(local.tags, var.tags)
   environment      = {}
 }
+
+resource "aws_sqs_queue" "this" {
+  name                       = var.git
+  visibility_timeout_seconds = 30
+  tags                       = merge(local.tags, var.tags)
+  sqs_managed_sse_enabled    = true
+}
+
+resource "aws_lambda_event_source_mapping" "this" {
+  event_source_arn = aws_sqs_queue.this.arn
+  function_name    = module.lambda.arn
+  enabled          = true
+  batch_size       = 1
+}
+
+data "aws_iam_policy_document" "this" {
+  statement {
+    actions = [
+      "sqs:ReceiveMessage",
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "this" {
+  name_prefix = var.git
+  policy      = data.aws_iam_policy_document.this.json
+}
+
+resource "aws_iam_role_policy_attachment" "invoker" {
+  policy_arn = aws_iam_policy.this.arn
+  role       = module.lambda.role_name
+}
