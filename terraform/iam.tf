@@ -1,7 +1,7 @@
 data "aws_iam_policy_document" "this" {
   statement {
     actions = [
-      "sqs:ReceiveMessage",
+      "sqs:SendMessage",
       "sqs:GetQueueAttributes",
       "logs:CreateLogStream",
       "logs:PutLogEvents",
