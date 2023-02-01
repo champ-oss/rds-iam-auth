@@ -7,6 +7,7 @@ import (
 	cfg "github.com/champ-oss/rds-iam-auth/config"
 	"github.com/champ-oss/rds-iam-auth/service/scheduler"
 	"github.com/champ-oss/rds-iam-auth/service/worker"
+	log "github.com/sirupsen/logrus"
 	"os"
 )
 
@@ -27,6 +28,7 @@ func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
 	}
 
 	for _, message := range sqsEvent.Records {
+		log.Warning("triggered from sqs message")
 		if err := runnerService.Run(message); err != nil {
 			return err
 		}

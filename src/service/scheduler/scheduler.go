@@ -4,6 +4,7 @@ import (
 	cfg "github.com/champ-oss/rds-iam-auth/config"
 	"github.com/champ-oss/rds-iam-auth/pkg/rds_client"
 	"github.com/champ-oss/rds-iam-auth/pkg/sqs_client"
+	log "github.com/sirupsen/logrus"
 )
 
 type Service struct {
@@ -21,6 +22,12 @@ func NewService(config *cfg.Config) *Service {
 }
 
 func (s *Service) Run() error {
-	_ = s.rdsClient.GetAllDatabases()
+	for _, database := range s.rdsClient.GetAllDatabases() {
+		if err := s.sqsClient.Send(database); err != nil {
+			log.Error(err)
+			return err
+		}
+	}
+	log.Info("all databases have been scheduled using SQS")
 	return nil
 }

@@ -21,10 +21,10 @@ func NewSqsClient(region string, queueUrl string) *SqsClient {
 }
 
 func (s *SqsClient) Send(messageBody string) error {
-	output, err := s.sqsClient.SendMessage(context.TODO(), &sqs.SendMessageInput{
+	log.Debugf("sending message: '%s' to queue: '%s'", messageBody, s.queueUrl)
+	_, err := s.sqsClient.SendMessage(context.TODO(), &sqs.SendMessageInput{
 		MessageBody: aws.String(messageBody),
 		QueueUrl:    aws.String(s.queueUrl),
 	})
-	log.Debug(output)
 	return err
 }

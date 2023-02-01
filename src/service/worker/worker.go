@@ -4,6 +4,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	cfg "github.com/champ-oss/rds-iam-auth/config"
 	"github.com/champ-oss/rds-iam-auth/pkg/rds_client"
+	log "github.com/sirupsen/logrus"
 )
 
 type Service struct {
@@ -19,5 +20,6 @@ func NewService(config *cfg.Config) *Service {
 }
 
 func (s *Service) Run(message events.SQSMessage) error {
+	log.Infof("sqs message body: %s", message.Body)
 	return nil
 }
