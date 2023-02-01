@@ -5,11 +5,13 @@ module "lambda" {
   #  vpc_id                          = var.enable_vpc ? var.vpc_id : null
   #  private_subnet_ids              = var.enable_vpc ? var.private_subnet_ids : null
   #  enable_vpc                      = var.enable_vpc
-  sync_image       = true
-  sync_source_repo = "champtitles/rds-iam-auth"
-  ecr_name         = "${var.git}-lambda"
-  ecr_tag          = module.hash.hash
-  tags             = merge(local.tags, var.tags)
+  sync_image          = true
+  sync_source_repo    = "champtitles/rds-iam-auth"
+  ecr_name            = "${var.git}-lambda"
+  ecr_tag             = module.hash.hash
+  enable_cw_event     = true
+  schedule_expression = "rate(1 hour)"
+  tags                = merge(local.tags, var.tags)
   environment = {
     QUEUE_URL = aws_sqs_queue.this.url
   }
