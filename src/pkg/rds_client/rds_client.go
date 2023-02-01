@@ -3,7 +3,7 @@ package rds_client
 import (
 	"context"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
-	"github.com/champ-oss/rds-iam-auth/pkg/common"
+	cfg "github.com/champ-oss/rds-iam-auth/config"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -13,11 +13,11 @@ type RdsClient struct {
 	rdsClient *rds.Client
 }
 
-func NewRdsClient(region string, queueUrl string) *RdsClient {
+func NewRdsClient(config *cfg.Config) *RdsClient {
 	return &RdsClient{
-		region:    region,
-		queueUrl:  queueUrl,
-		rdsClient: rds.NewFromConfig(common.GetAWSConfig(region)),
+		region:    config.AwsRegion,
+		queueUrl:  config.QueueUrl,
+		rdsClient: rds.NewFromConfig(config.AwsConfig),
 	}
 }
 

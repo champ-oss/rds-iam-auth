@@ -1,6 +1,9 @@
 package config
 
 import (
+	"context"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"strings"
@@ -10,18 +13,20 @@ type Config struct {
 	Debug     bool
 	AwsRegion string
 	QueueUrl  string
+	AwsConfig aws.Config
 }
 
 // LoadConfig loads configuration values from environment variables
 func LoadConfig() *Config {
-	config := Config{
+	cfg := Config{
 		Debug:     parseBool("DEBUG", true),
 		AwsRegion: parseString("AWS_REGION", "us-east-2"),
 		QueueUrl:  parseString("QUEUE_URL", ""),
 	}
 
-	setLogging(config.Debug)
-	return &config
+	cfg.AwsConfig = getAWSConfig(cfg.AwsRegion)
+	setLogging(cfg.Debug)
+	return &cfg
 }
 
 func setLogging(debug bool) {
@@ -34,6 +39,17 @@ func setLogging(debug bool) {
 		log.SetLevel(log.DebugLevel)
 		log.Debug("Debugging mode enabled")
 	}
+}
+
+// getAWSConfig Logs in to AWS and return a config
+func getAWSConfig(region string) aws.Config {
+	log.Infof("Getting AWS Config using region: %s", region)
+	awsConfig, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Info("Logged in to AWS successfully")
+	return awsConfig
 }
 
 // parseBool parses an environment variable as a boolean value

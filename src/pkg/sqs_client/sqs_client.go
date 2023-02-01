@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
-	"github.com/champ-oss/rds-iam-auth/pkg/common"
+	cfg "github.com/champ-oss/rds-iam-auth/config"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -13,10 +13,10 @@ type SqsClient struct {
 	sqsClient *sqs.Client
 }
 
-func NewSqsClient(region string, queueUrl string) *SqsClient {
+func NewSqsClient(config *cfg.Config) *SqsClient {
 	return &SqsClient{
-		queueUrl:  queueUrl,
-		sqsClient: sqs.NewFromConfig(common.GetAWSConfig(region)),
+		queueUrl:  config.QueueUrl,
+		sqsClient: sqs.NewFromConfig(config.AwsConfig),
 	}
 }
 

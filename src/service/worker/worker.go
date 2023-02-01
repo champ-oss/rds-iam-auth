@@ -17,12 +17,12 @@ type Service struct {
 func NewService(config *cfg.Config) *Service {
 	return &Service{
 		config:    config,
-		rdsClient: rds_client.NewRdsClient(config.AwsRegion, config.QueueUrl),
+		rdsClient: rds_client.NewRdsClient(config),
 	}
 }
 
 func (s *Service) Run(message events.SQSMessage) error {
-	rdsType, rdsIdentifier := parseSqsMessageBody(message)
+	rdsType, rdsIdentifier := parseSqsMessage(message)
 
 	switch rdsType {
 	case common.RdsTypeClusterKey:
@@ -38,7 +38,8 @@ func (s *Service) Run(message events.SQSMessage) error {
 	return nil
 }
 
-func parseSqsMessageBody(message events.SQSMessage) (rdsType string, rdsIdentifier string) {
+func parseSqsMessage(message events.SQSMessage) (rdsType string, rdsIdentifier string) {
+	log.Debugf("sqs message body: %s", message.Body)
 	messageParts := strings.Split(message.Body, common.SqsMessageBodySeparator)
 	if len(messageParts) != 2 {
 		log.Fatalf("unable to parse sqs message: %s", message.Body)

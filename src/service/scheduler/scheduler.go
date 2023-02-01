@@ -18,8 +18,8 @@ type Service struct {
 func NewService(config *cfg.Config) *Service {
 	return &Service{
 		config:    config,
-		sqsClient: sqs_client.NewSqsClient(config.AwsRegion, config.QueueUrl),
-		rdsClient: rds_client.NewRdsClient(config.AwsRegion, config.QueueUrl),
+		sqsClient: sqs_client.NewSqsClient(config),
+		rdsClient: rds_client.NewRdsClient(config),
 	}
 }
 
