@@ -1,8 +1,16 @@
-FROM public.ecr.aws/lambda/python:3.9
+FROM public.ecr.aws/lambda/provided:al2 as build
 
-COPY *.py ${LAMBDA_TASK_ROOT}
-COPY requirements.txt ${LAMBDA_TASK_ROOT}
+RUN yum install -y golang
+RUN go env -w GOPROXY=direct
 
-RUN pip3 install -r requirements.txt -t ${LAMBDA_TASK_ROOT}
+ADD ./src/go.mod ./src/go.sum ./
+RUN go mod download
 
-CMD [ "rds_iam_auth.lambda_handler" ]
+COPY ./src .
+
+RUN go build -o /main ./cmd/
+
+FROM public.ecr.aws/lambda/provided:al2
+
+COPY --from=build /main /main
+ENTRYPOINT [ "/main" ]
