@@ -50,6 +50,19 @@ module "aurora" {
   tags                      = local.tags
 }
 
+module "mysql" {
+  source                   = "git::git@github.com:champ-oss/terraform-aws-mysql.git?ref=v1.0.162-468d0e0"
+  vpc_id                   = data.aws_vpcs.this.ids[0]
+  private_subnet_ids       = data.aws_subnets.private.ids
+  source_security_group_id = aws_security_group.test.id
+  name_prefix              = local.git
+  git                      = local.git
+  skip_final_snapshot      = true
+  protect                  = false
+  tags                     = local.tags
+  name                     = "test"
+}
+
 module "this" {
   source = "../../"
 }

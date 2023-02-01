@@ -1,4 +1,4 @@
-package runner
+package worker
 
 import (
 	"github.com/aws/aws-lambda-go/events"

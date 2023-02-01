@@ -21,6 +21,7 @@ func NewService(config *cfg.Config) *Service {
 }
 
 func (s *Service) Run() error {
-	_ = s.rdsClient.GetAllDatabases()
+	_ = s.rdsClient.GetAllDBClusters()
+	_ = s.rdsClient.GetAllDBInstances()
 	return nil
 }
