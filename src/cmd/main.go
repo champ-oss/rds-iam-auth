@@ -5,29 +5,32 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	cfg "github.com/champ-oss/rds-iam-auth/config"
-	log "github.com/sirupsen/logrus"
+	"github.com/champ-oss/rds-iam-auth/service/runner"
+	"github.com/champ-oss/rds-iam-auth/service/scheduler"
 	"os"
 )
 
-// global state
-func init() {}
+var config *cfg.Config
+var schedulerService *scheduler.Service
+var runnerService *runner.Service
+
+func init() {
+	config = cfg.LoadConfig()
+	schedulerService = scheduler.NewService(config)
+	runnerService = runner.NewService(config)
+}
 
 func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
-	_ = cfg.LoadConfig()
 
-	for _, message := range sqsEvent.Records {
-		log.Infof("The message %s for event source %s = %s \n", message.MessageId, message.EventSource, message.Body)
+	if len(sqsEvent.Records) < 1 {
+		return schedulerService.Run()
 	}
 
-	log.Info("starting main run..")
-
-	// Get list of RDS and Aurora
-
-	// Look up password in SSM
-
-	// Login to endpoint
-
-	// Run SQL to enable IAM Auth
+	for _, message := range sqsEvent.Records {
+		if err := runnerService.Run(message); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

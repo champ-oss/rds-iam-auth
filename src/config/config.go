@@ -7,13 +7,17 @@ import (
 )
 
 type Config struct {
-	Debug bool
+	Debug     bool
+	AwsRegion string
+	QueueUrl  string
 }
 
 // LoadConfig loads configuration values from environment variables
 func LoadConfig() *Config {
 	config := Config{
-		Debug: parseBool("DEBUG", true),
+		Debug:     parseBool("DEBUG", true),
+		AwsRegion: parseString("AWS_REGION", ""),
+		QueueUrl:  parseString("QUEUE_URL", ""),
 	}
 
 	setLogging(config.Debug)
@@ -39,6 +43,14 @@ func parseBool(key string, fallback bool) bool {
 	}
 	if value := os.Getenv(key); strings.ToLower(value) == "false" {
 		return false
+	}
+	return fallback
+}
+
+// parseString parses an environment variable as a string value
+func parseString(key, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
 	}
 	return fallback
 }
