@@ -11,7 +11,7 @@ module "lambda" {
   ecr_tag          = module.hash.hash
   tags             = merge(local.tags, var.tags)
   environment = {
-    AWS_REGION = data.aws_region.this
+    AWS_REGION = data.aws_region.this.name
     QUEUE_URL  = aws_sqs_queue.this.url
   }
 }
