@@ -2,7 +2,10 @@ package rds_client
 
 import (
 	"context"
+	"fmt"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
+	"github.com/aws/aws-sdk-go-v2/service/rds/types"
 	cfg "github.com/champ-oss/rds-iam-auth/config"
 	log "github.com/sirupsen/logrus"
 )
@@ -10,6 +13,8 @@ import (
 type RdsClientInterface interface {
 	GetAllDBClusters() []string
 	GetAllDBInstances() []string
+	GetDBCluster(identifier string) (*types.DBCluster, error)
+	GetDBInstance(identifier string) (*types.DBInstance, error)
 }
 
 type RdsClient struct {
@@ -70,4 +75,32 @@ func (r *RdsClient) GetAllDBInstances() []string {
 
 	log.Infof("found %d RDS instances", len(identifiers))
 	return identifiers
+}
+
+func (r *RdsClient) GetDBCluster(identifier string) (*types.DBCluster, error) {
+	log.Infof("getting information for RDS cluster: %s", identifier)
+	output, err := r.rdsClient.DescribeDBClusters(context.TODO(), &rds.DescribeDBClustersInput{
+		DBClusterIdentifier: aws.String(identifier),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(output.DBClusters) != 1 {
+		return nil, fmt.Errorf("unable to find RDS cluster with identifier %s", identifier)
+	}
+	return &output.DBClusters[0], nil
+}
+
+func (r *RdsClient) GetDBInstance(identifier string) (*types.DBInstance, error) {
+	log.Infof("getting information for RDS instance: %s", identifier)
+	output, err := r.rdsClient.DescribeDBInstances(context.TODO(), &rds.DescribeDBInstancesInput{
+		DBInstanceIdentifier: aws.String(identifier),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(output.DBInstances) != 1 {
+		return nil, fmt.Errorf("unable to find RDS instance with identifier %s", identifier)
+	}
+	return &output.DBInstances[0], nil
 }

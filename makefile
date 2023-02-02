@@ -28,3 +28,4 @@ mocks:
 	cd src && go install github.com/golang/mock/mockgen@latest
 	cd src && mockgen -source pkg/rds_client/rds_client.go -destination mocks/mock_rds_client/mock.go -package mock_rds_client
 	cd src && mockgen -source pkg/sqs_client/sqs_client.go -destination mocks/mock_sqs_client/mock.go -package mock_sqs_client
+	cd src && mockgen -source pkg/ssm_client/ssm_client.go -destination mocks/mock_ssm_client/mock.go -package mock_ssm_client
