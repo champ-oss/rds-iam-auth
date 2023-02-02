@@ -1,10 +1,10 @@
 module "lambda" {
-  source = "github.com/champ-oss/terraform-aws-lambda.git?ref=v1.0.111-919a6e1"
-  git    = var.git
-  name   = "lambda"
-  #  vpc_id                          = var.enable_vpc ? var.vpc_id : null
-  #  private_subnet_ids              = var.enable_vpc ? var.private_subnet_ids : null
-  #  enable_vpc                      = var.enable_vpc
+  source              = "github.com/champ-oss/terraform-aws-lambda.git?ref=v1.0.111-919a6e1"
+  git                 = var.git
+  name                = "lambda"
+  enable_vpc          = true
+  vpc_id              = var.vpc_id
+  private_subnet_ids  = var.private_subnet_ids
   sync_image          = true
   sync_source_repo    = "champtitles/rds-iam-auth"
   ecr_name            = "${var.git}-lambda"

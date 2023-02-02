@@ -64,5 +64,7 @@ module "mysql" {
 }
 
 module "this" {
-  source = "../../"
+  source             = "../../"
+  vpc_id             = data.aws_vpcs.this.ids[0]
+  private_subnet_ids = data.aws_subnets.private.ids
 }
