@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	cfg "github.com/champ-oss/rds-iam-auth/config"
 	"github.com/champ-oss/rds-iam-auth/pkg/common"
@@ -11,18 +12,21 @@ import (
 
 type Service struct {
 	config    *cfg.Config
-	rdsClient *rds_client.RdsClient
+	rdsClient rds_client.RdsClientInterface
 }
 
-func NewService(config *cfg.Config) *Service {
+func NewService(config *cfg.Config, rdsClient rds_client.RdsClientInterface) *Service {
 	return &Service{
 		config:    config,
-		rdsClient: rds_client.NewRdsClient(config),
+		rdsClient: rdsClient,
 	}
 }
 
 func (s *Service) Run(message events.SQSMessage) error {
-	rdsType, rdsIdentifier := parseSqsMessage(message)
+	rdsType, rdsIdentifier, err := parseSqsMessage(message)
+	if err != nil {
+		return err
+	}
 
 	switch rdsType {
 	case common.RdsTypeClusterKey:
@@ -32,19 +36,19 @@ func (s *Service) Run(message events.SQSMessage) error {
 		log.Infof("getting RDS instance information for: %s", rdsIdentifier)
 
 	default:
-		log.Fatalf("unrecognized RDS type: %s", rdsType)
+		return fmt.Errorf("unrecognized RDS type: %s", rdsType)
 	}
 
 	return nil
 }
 
-func parseSqsMessage(message events.SQSMessage) (rdsType string, rdsIdentifier string) {
+func parseSqsMessage(message events.SQSMessage) (rdsType string, rdsIdentifier string, err error) {
 	log.Debugf("sqs message body: %s", message.Body)
 	messageParts := strings.Split(message.Body, common.SqsMessageBodySeparator)
 	if len(messageParts) != 2 {
-		log.Fatalf("unable to parse sqs message: %s", message.Body)
+		return "", "", fmt.Errorf("unable to parse sqs message: %s", message.Body)
 	}
 	rdsType = messageParts[0]
 	rdsIdentifier = messageParts[1]
-	return rdsType, rdsIdentifier
+	return rdsType, rdsIdentifier, nil
 }

@@ -7,6 +7,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type RdsClientInterface interface {
+	GetAllDBClusters() []string
+	GetAllDBInstances() []string
+}
+
 type RdsClient struct {
 	region    string
 	queueUrl  string

@@ -8,6 +8,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type SqsClientInterface interface {
+	Send(messageBody string) error
+}
+
 type SqsClient struct {
 	queueUrl  string
 	sqsClient *sqs.Client

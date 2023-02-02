@@ -11,15 +11,15 @@ import (
 
 type Service struct {
 	config    *cfg.Config
-	sqsClient *sqs_client.SqsClient
-	rdsClient *rds_client.RdsClient
+	sqsClient sqs_client.SqsClientInterface
+	rdsClient rds_client.RdsClientInterface
 }
 
-func NewService(config *cfg.Config) *Service {
+func NewService(config *cfg.Config, rdsClient rds_client.RdsClientInterface, sqsClient sqs_client.SqsClientInterface) *Service {
 	return &Service{
 		config:    config,
-		sqsClient: sqs_client.NewSqsClient(config),
-		rdsClient: rds_client.NewRdsClient(config),
+		sqsClient: sqsClient,
+		rdsClient: rdsClient,
 	}
 }
 

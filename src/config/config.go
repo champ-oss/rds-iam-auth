@@ -48,7 +48,7 @@ func getAWSConfig(region string) aws.Config {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Info("Logged in to AWS successfully")
+	log.Info("Loaded AWS configuration successfully")
 	return awsConfig
 }
 

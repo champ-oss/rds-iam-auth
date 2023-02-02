@@ -5,6 +5,8 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	cfg "github.com/champ-oss/rds-iam-auth/config"
+	"github.com/champ-oss/rds-iam-auth/pkg/rds_client"
+	"github.com/champ-oss/rds-iam-auth/pkg/sqs_client"
 	"github.com/champ-oss/rds-iam-auth/service/scheduler"
 	"github.com/champ-oss/rds-iam-auth/service/worker"
 	log "github.com/sirupsen/logrus"
@@ -17,8 +19,10 @@ var runnerService *worker.Service
 
 func init() {
 	config = cfg.LoadConfig()
-	schedulerService = scheduler.NewService(config)
-	runnerService = worker.NewService(config)
+	rdsClient := rds_client.NewRdsClient(config)
+	sqsClient := sqs_client.NewSqsClient(config)
+	schedulerService = scheduler.NewService(config, rdsClient, sqsClient)
+	runnerService = worker.NewService(config, rdsClient)
 }
 
 func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
