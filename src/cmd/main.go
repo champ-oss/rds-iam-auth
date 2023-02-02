@@ -46,7 +46,16 @@ func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
 func main() {
 	if os.Getenv("AWS_LAMBDA_RUNTIME_API") == "" {
 		// Support running the code locally
-		_ = handler(context.TODO(), events.SQSEvent{})
+		_ = handler(context.TODO(), events.SQSEvent{
+			Records: []events.SQSMessage{
+				{
+					Body: "cluster|rds-iam-auth-20230202151930094200000014",
+				},
+				{
+					Body: "instance|rds-iam-auth",
+				},
+			},
+		})
 	} else {
 		lambda.Start(handler)
 	}
