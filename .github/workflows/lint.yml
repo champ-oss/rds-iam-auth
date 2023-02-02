@@ -26,15 +26,18 @@ jobs:
           tflint_version: v0.34.1
 
       - uses: golangci/golangci-lint-action@v3.3.1
+        if: always()
         with:
           args: "--out-${NO_FUTURE}format colored-line-number"
           working-directory: src
 
       - name: terraform fmt
+        if: always()
         working-directory: terraform
         run: terraform fmt -recursive -check
 
       - name: tflint
+        if: always()
         shell: bash
         working-directory: terraform
         run: |

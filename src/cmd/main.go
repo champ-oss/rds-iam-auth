@@ -40,7 +40,7 @@ func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
 func main() {
 	if os.Getenv("AWS_LAMBDA_RUNTIME_API") == "" {
 		// Support running the code locally
-		_ = handler(nil, events.SQSEvent{})
+		_ = handler(context.TODO(), events.SQSEvent{})
 	} else {
 		lambda.Start(handler)
 	}
