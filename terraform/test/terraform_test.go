@@ -48,6 +48,7 @@ func getAWSConfig(region string) aws.Config {
 }
 
 func checkDatabaseConnection(dbEndpoint, region, dbUser, dbName string) {
+	log.Infof("getting IAM auth token for RDS endpoint: %s", dbEndpoint)
 	authenticationToken, err := auth.BuildAuthToken(context.TODO(), dbEndpoint, region, dbUser, getAWSConfig(region).Credentials)
 	if err != nil {
 		log.Fatal(err)
@@ -55,11 +56,13 @@ func checkDatabaseConnection(dbEndpoint, region, dbUser, dbName string) {
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?tls=true&allowCleartextPasswords=true", dbUser, authenticationToken, dbEndpoint, dbName)
 
+	log.Infof("connecting to MySQL endpoint: %s", dbEndpoint)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	log.Info("connected successfully. running database ping")
 	err = db.Ping()
 	if err != nil {
 		log.Fatal(err)
