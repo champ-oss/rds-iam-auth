@@ -7,6 +7,7 @@ package mock_rds_client
 import (
 	reflect "reflect"
 
+	types "github.com/aws/aws-sdk-go-v2/service/rds/types"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -59,4 +60,34 @@ func (m *MockRdsClientInterface) GetAllDBInstances() []string {
 func (mr *MockRdsClientInterfaceMockRecorder) GetAllDBInstances() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllDBInstances", reflect.TypeOf((*MockRdsClientInterface)(nil).GetAllDBInstances))
+}
+
+// GetDBCluster mocks base method.
+func (m *MockRdsClientInterface) GetDBCluster(identifier string) (*types.DBCluster, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDBCluster", identifier)
+	ret0, _ := ret[0].(*types.DBCluster)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDBCluster indicates an expected call of GetDBCluster.
+func (mr *MockRdsClientInterfaceMockRecorder) GetDBCluster(identifier interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDBCluster", reflect.TypeOf((*MockRdsClientInterface)(nil).GetDBCluster), identifier)
+}
+
+// GetDBInstance mocks base method.
+func (m *MockRdsClientInterface) GetDBInstance(identifier string) (*types.DBInstance, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDBInstance", identifier)
+	ret0, _ := ret[0].(*types.DBInstance)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDBInstance indicates an expected call of GetDBInstance.
+func (mr *MockRdsClientInterfaceMockRecorder) GetDBInstance(identifier interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDBInstance", reflect.TypeOf((*MockRdsClientInterface)(nil).GetDBInstance), identifier)
 }

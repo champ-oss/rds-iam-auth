@@ -10,10 +10,11 @@ import (
 )
 
 type Config struct {
-	Debug     bool
-	AwsRegion string
-	QueueUrl  string
-	AwsConfig aws.Config
+	Debug             bool
+	AwsRegion         string
+	QueueUrl          string
+	AwsConfig         aws.Config
+	SsmSearchPatterns []string
 }
 
 // LoadConfig loads configuration values from environment variables
@@ -22,6 +23,10 @@ func LoadConfig() *Config {
 		Debug:     parseBool("DEBUG", true),
 		AwsRegion: parseString("AWS_REGION", "us-east-2"),
 		QueueUrl:  parseString("QUEUE_URL", ""),
+		SsmSearchPatterns: []string{
+			"%s-mysql",
+			"/rds-iam-auth/mysql/%s/password",
+		},
 	}
 
 	cfg.AwsConfig = getAWSConfig(cfg.AwsRegion)
