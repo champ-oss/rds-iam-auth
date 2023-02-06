@@ -11,7 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.35.1
 	github.com/golang/mock v1.6.0
 	github.com/sirupsen/logrus v1.9.0
-	github.com/stretchr/testify v1.7.2
+	github.com/stretchr/testify v1.8.1
 )
 
 require (
