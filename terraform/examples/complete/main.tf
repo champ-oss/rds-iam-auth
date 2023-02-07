@@ -36,7 +36,7 @@ data "aws_subnets" "public" {
 data "aws_subnets" "private" {
   tags = {
     purpose = "vega"
-    Type    = "Public"
+    Type    = "Private"
   }
 
   filter {
@@ -62,7 +62,6 @@ module "aurora" {
   tags                      = local.tags
   publicly_accessible       = true
   cidr_blocks               = ["0.0.0.0/0"]
-  #iam_auth_lambda_enabled   = true
 }
 
 module "mysql" {
@@ -78,7 +77,6 @@ module "mysql" {
   name                     = "test"
   publicly_accessible      = true
   cidr_blocks              = ["0.0.0.0/0"]
-  #iam_auth_lambda_enabled  = true
 }
 
 module "this" {
