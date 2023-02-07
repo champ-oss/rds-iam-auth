@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/rds/types"
 	cfg "github.com/champ-oss/rds-iam-auth/config"
 	"github.com/champ-oss/rds-iam-auth/pkg/common"
+	"github.com/champ-oss/rds-iam-auth/pkg/mysql_client"
 	"github.com/champ-oss/rds-iam-auth/pkg/rds_client"
 	"github.com/champ-oss/rds-iam-auth/pkg/ssm_client"
 	log "github.com/sirupsen/logrus"
@@ -13,17 +14,19 @@ import (
 )
 
 type Service struct {
-	config    *cfg.Config
-	rdsClient rds_client.RdsClientInterface
-	ssmClient ssm_client.SsmClientInterface
+	config      *cfg.Config
+	rdsClient   rds_client.RdsClientInterface
+	ssmClient   ssm_client.SsmClientInterface
+	mysqlClient mysql_client.MysqlClientInterface
 }
 
 // NewService creates a new instance of this service
-func NewService(config *cfg.Config, rdsClient rds_client.RdsClientInterface, ssmClient ssm_client.SsmClientInterface) *Service {
+func NewService(config *cfg.Config, rdsClient rds_client.RdsClientInterface, ssmClient ssm_client.SsmClientInterface, mysqlClient mysql_client.MysqlClientInterface) *Service {
 	return &Service{
-		config:    config,
-		rdsClient: rdsClient,
-		ssmClient: ssmClient,
+		config:      config,
+		rdsClient:   rdsClient,
+		ssmClient:   ssmClient,
+		mysqlClient: mysqlClient,
 	}
 }
 
@@ -58,6 +61,11 @@ func (s *Service) Run(message events.SQSMessage) error {
 		return err
 	}
 
+	_, err = s.mysqlClient.Connect(mySQLConnectionInfo)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -73,6 +81,7 @@ func (s *Service) getDBClusterInfo(rdsIdentifier string) (common.MySQLConnection
 		Endpoint:       *cluster.Endpoint,
 		Port:           *cluster.Port,
 		Username:       *cluster.MasterUsername,
+		Database:       *cluster.DatabaseName,
 		SecurityGroups: getSecurityGroupIds(cluster.VpcSecurityGroups),
 	}
 	log.Debugf("%+v", mySQLConnectionInfo)
@@ -91,6 +100,7 @@ func (s *Service) getDBInstanceInfo(rdsIdentifier string) (common.MySQLConnectio
 		Endpoint:       *instance.Endpoint.Address,
 		Port:           instance.Endpoint.Port,
 		Username:       *instance.MasterUsername,
+		Database:       *instance.DBName,
 		SecurityGroups: getSecurityGroupIds(instance.VpcSecurityGroups),
 	}
 	log.Debugf("%+v", mySQLConnectionInfo)

@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/rds v1.40.1
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.20.1
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.35.1
+	github.com/go-sql-driver/mysql v1.7.0
 	github.com/golang/mock v1.6.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.7.2

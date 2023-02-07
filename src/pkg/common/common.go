@@ -9,5 +9,6 @@ type MySQLConnectionInfo struct {
 	Port           int32
 	Username       string
 	Password       string
+	Database       string
 	SecurityGroups []string
 }
