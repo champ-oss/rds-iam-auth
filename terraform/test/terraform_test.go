@@ -54,7 +54,7 @@ func checkDatabaseConnection(dbEndpoint, region, dbUser, dbName string) {
 		log.Fatal(err)
 	}
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?tls=true&allowCleartextPasswords=true", dbUser, authenticationToken, dbEndpoint, dbName)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?tls=skip-verify&allowCleartextPasswords=true", dbUser, authenticationToken, dbEndpoint, dbName)
 
 	log.Infof("connecting to MySQL endpoint: %s", dbEndpoint)
 	db, err := sql.Open("mysql", dsn)
