@@ -10,11 +10,13 @@ import (
 )
 
 type Config struct {
-	Debug             bool
-	AwsRegion         string
-	QueueUrl          string
-	AwsConfig         aws.Config
-	SsmSearchPatterns []string
+	Debug              bool
+	AwsRegion          string
+	QueueUrl           string
+	AwsConfig          aws.Config
+	SsmSearchPatterns  []string
+	DbIamReadUsername  string
+	DbIamAdminUsername string
 }
 
 // LoadConfig loads configuration values from environment variables
@@ -27,6 +29,8 @@ func LoadConfig() *Config {
 			"%s-mysql",
 			"/rds-iam-auth/mysql/%s/password",
 		},
+		DbIamReadUsername:  parseString("DB_IAM_READ_USERNAME", "db_iam_read"),
+		DbIamAdminUsername: parseString("DB_IAM_ADMIN_USERNAME", "db_iam_admin"),
 	}
 
 	cfg.AwsConfig = getAWSConfig(cfg.AwsRegion)

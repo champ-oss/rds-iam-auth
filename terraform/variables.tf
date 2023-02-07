@@ -19,3 +19,15 @@ variable "private_subnet_ids" {
   description = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_cluster#subnet_ids"
   type        = list(string)
 }
+
+variable "db_iam_read_username" {
+  description = "IAM read only username"
+  type        = string
+  default     = "db_iam_read"
+}
+
+variable "db_iam_admin_username" {
+  description = "IAM admin username"
+  type        = string
+  default     = "db_iam_admin"
+}

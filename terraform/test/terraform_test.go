@@ -24,7 +24,7 @@ func TestTerraform(t *testing.T) {
 		},
 		Vars: map[string]interface{}{},
 	}
-	defer terraform.Destroy(t, terraformOptions)
+	//defer terraform.Destroy(t, terraformOptions)
 	terraform.InitAndApplyAndIdempotent(t, terraformOptions)
 
 	dbUser := "db_iam_read"

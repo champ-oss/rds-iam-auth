@@ -13,7 +13,9 @@ module "lambda" {
   schedule_expression = "rate(1 hour)"
   tags                = merge(local.tags, var.tags)
   environment = {
-    QUEUE_URL = aws_sqs_queue.this.url
+    QUEUE_URL             = aws_sqs_queue.this.url
+    DB_IAM_READ_USERNAME  = var.db_iam_read_username
+    DB_IAM_ADMIN_USERNAME = var.db_iam_admin_username
   }
 }
 
