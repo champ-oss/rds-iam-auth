@@ -21,10 +21,10 @@ data "aws_vpcs" "this" {
   }
 }
 
-data "aws_subnets" "private" {
+data "aws_subnets" "this" {
   tags = {
     purpose = "vega"
-    Type    = "Private"
+    Type    = "Public"
   }
 
   filter {
@@ -39,21 +39,24 @@ resource "aws_security_group" "test" {
 }
 
 module "aurora" {
-  source                    = "github.com/champ-oss/terraform-aws-aurora.git?ref=v1.0.29-f57eb21"
+  source                    = "github.com/champ-oss/terraform-aws-aurora.git?ref=v1.0.30-3669f12"
   cluster_identifier_prefix = local.git
   git                       = local.git
   protect                   = false
   skip_final_snapshot       = true
   vpc_id                    = data.aws_vpcs.this.ids[0]
-  private_subnet_ids        = data.aws_subnets.private.ids
+  private_subnet_ids        = data.aws_subnets.this.ids
   source_security_group_id  = aws_security_group.test.id
   tags                      = local.tags
+  publicly_accessible       = true
+  cidr_blocks               = ["0.0.0.0/0"]
+  iam_auth_lambda_enabled   = true
 }
 
 module "mysql" {
-  source                   = "github.com/champ-oss/terraform-aws-mysql.git?ref=v1.0.162-468d0e0"
+  source                   = "github.com/champ-oss/terraform-aws-mysql.git?ref=v1.0.165-29d9cd6"
   vpc_id                   = data.aws_vpcs.this.ids[0]
-  private_subnet_ids       = data.aws_subnets.private.ids
+  private_subnet_ids       = data.aws_subnets.this.ids
   source_security_group_id = aws_security_group.test.id
   name_prefix              = local.git
   git                      = local.git
@@ -61,10 +64,13 @@ module "mysql" {
   protect                  = false
   tags                     = local.tags
   name                     = "test"
+  publicly_accessible      = true
+  cidr_blocks              = ["0.0.0.0/0"]
+  iam_auth_lambda_enabled  = true
 }
 
 module "this" {
   source             = "../../"
   vpc_id             = data.aws_vpcs.this.ids[0]
-  private_subnet_ids = data.aws_subnets.private.ids
+  private_subnet_ids = data.aws_subnets.this.ids
 }
