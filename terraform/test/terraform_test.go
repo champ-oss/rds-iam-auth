@@ -62,9 +62,9 @@ func checkDatabaseConnection(dbEndpoint, region, dbUser, dbName string) {
 		log.Fatal(err)
 	}
 
-	log.Info("connected successfully. running database ping")
 	err = db.Ping()
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Info("connected successfully")
 }
