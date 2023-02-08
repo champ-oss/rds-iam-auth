@@ -39,6 +39,12 @@ variable "retry_timeout_minutes" {
   default     = 4 * 60
 }
 
+variable "schedule_expression" {
+  description = "schedule expression using cron"
+  type        = string
+  default     = "cron(0 4 * * ? *)"
+}
+
 variable "vpc_id" {
   description = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group#vpc_id"
   type        = string

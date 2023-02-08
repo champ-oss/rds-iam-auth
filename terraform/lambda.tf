@@ -10,7 +10,7 @@ module "lambda" {
   ecr_name            = "${var.git}-lambda"
   ecr_tag             = module.hash.hash
   enable_cw_event     = true
-  schedule_expression = "rate(1 hour)"
+  schedule_expression = var.schedule_expression
   tags                = merge(local.tags, var.tags)
   environment = {
     QUEUE_URL             = aws_sqs_queue.this.url
