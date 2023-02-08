@@ -57,18 +57,27 @@ func connect(mySQLConnectionInfo common.MySQLConnectionInfo) (*sql.DB, error) {
 }
 
 // Query executes the given sql query and returns an error
-func (m *MysqlClient) Query(sql string) error {
-	log.Debug(sql)
-	rows, err := m.db.Query(sql)
+func (m *MysqlClient) Query(sqlStatement string) error {
+	log.Debug(sqlStatement)
+	rows, err := m.db.Query(sqlStatement)
 	if err != nil {
 		return err
 	}
 	defer closeRows(rows)
 
+	columns, _ := rows.Columns()
+	resultValues := make([]interface{}, len(columns))
+	for i, _ := range columns {
+		resultValues[i] = new(sql.RawBytes)
+	}
+
 	for rows.Next() {
-		var results []byte
-		_ = rows.Scan(&results)
-		log.Debugf("query result: %s", results)
+		_ = rows.Scan(resultValues...)
+		var logOutput string
+		for i := range resultValues {
+			logOutput = fmt.Sprintf("%s %s", logOutput, string(*resultValues[i].(*sql.RawBytes)))
+		}
+		log.Debugf("query result:%s", logOutput)
 	}
 	return nil
 }

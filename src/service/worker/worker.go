@@ -64,7 +64,6 @@ func (s *Service) getConnectionInfo(rdsType, rdsIdentifier string) (common.MySQL
 
 // getDBClusterInfo retrieves connection information for the RDS cluster
 func (s *Service) getDBClusterInfo(rdsIdentifier string) (common.MySQLConnectionInfo, error) {
-	log.Infof("getting RDS cluster information for: %s", rdsIdentifier)
 	cluster, err := s.rdsClient.GetDBCluster(rdsIdentifier)
 	if err != nil {
 		return common.MySQLConnectionInfo{}, err
@@ -83,7 +82,6 @@ func (s *Service) getDBClusterInfo(rdsIdentifier string) (common.MySQLConnection
 
 // getDBInstanceInfo retrieves connection information for the RDS instance
 func (s *Service) getDBInstanceInfo(rdsIdentifier string) (common.MySQLConnectionInfo, error) {
-	log.Infof("getting RDS instance information for: %s", rdsIdentifier)
 	instance, err := s.rdsClient.GetDBInstance(rdsIdentifier)
 	if err != nil {
 		return common.MySQLConnectionInfo{}, err
