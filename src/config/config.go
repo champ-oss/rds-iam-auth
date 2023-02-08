@@ -17,6 +17,7 @@ type Config struct {
 	SsmSearchPatterns  []string
 	DbIamReadUsername  string
 	DbIamAdminUsername string
+	DefaultDatabase    string
 }
 
 // LoadConfig loads configuration values from environment variables
@@ -31,6 +32,7 @@ func LoadConfig() *Config {
 		},
 		DbIamReadUsername:  parseString("DB_IAM_READ_USERNAME", "db_iam_read"),
 		DbIamAdminUsername: parseString("DB_IAM_ADMIN_USERNAME", "db_iam_admin"),
+		DefaultDatabase:    parseString("DEFAULT_DATABASE", "mysql"),
 	}
 
 	cfg.AwsConfig = getAWSConfig(cfg.AwsRegion)

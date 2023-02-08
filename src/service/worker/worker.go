@@ -74,7 +74,7 @@ func (s *Service) getDBClusterInfo(rdsIdentifier string) (common.MySQLConnection
 		Endpoint:       *cluster.Endpoint,
 		Port:           *cluster.Port,
 		Username:       *cluster.MasterUsername,
-		Database:       *cluster.DatabaseName,
+		Database:       s.config.DefaultDatabase,
 		SecurityGroups: common.GetSecurityGroupIds(cluster.VpcSecurityGroups),
 	}
 	log.Debugf("%+v", mySQLConnectionInfo)
@@ -93,7 +93,7 @@ func (s *Service) getDBInstanceInfo(rdsIdentifier string) (common.MySQLConnectio
 		Endpoint:       *instance.Endpoint.Address,
 		Port:           instance.Endpoint.Port,
 		Username:       *instance.MasterUsername,
-		Database:       *instance.DBName,
+		Database:       s.config.DefaultDatabase,
 		SecurityGroups: common.GetSecurityGroupIds(instance.VpcSecurityGroups),
 	}
 	log.Debugf("%+v", mySQLConnectionInfo)
