@@ -1,25 +1,3 @@
-variable "tags" {
-  description = "Map of tags to assign to resources"
-  type        = map(string)
-  default     = {}
-}
-
-variable "git" {
-  description = "Name of the Git repo"
-  type        = string
-  default     = "rds-iam-auth"
-}
-
-variable "vpc_id" {
-  description = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group#vpc_id"
-  type        = string
-}
-
-variable "private_subnet_ids" {
-  description = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_cluster#subnet_ids"
-  type        = list(string)
-}
-
 variable "db_iam_read_username" {
   description = "IAM read only username"
   type        = string
@@ -31,3 +9,38 @@ variable "db_iam_admin_username" {
   type        = string
   default     = "db_iam_admin"
 }
+
+variable "git" {
+  description = "Name of the Git repo"
+  type        = string
+  default     = "rds-iam-auth"
+}
+
+variable "private_subnet_ids" {
+  description = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_cluster#subnet_ids"
+  type        = list(string)
+}
+
+variable "tags" {
+  description = "Map of tags to assign to resources"
+  type        = map(string)
+  default     = {}
+}
+
+variable "retry_delay_seconds" {
+  description = "How many seconds to wait before retrying the IAM user setup"
+  type        = number
+  default     = 30
+}
+
+variable "retry_timeout_minutes" {
+  description = "How many minutes to retry the IAM user setup before giving up"
+  type        = number
+  default     = 4 * 60
+}
+
+variable "vpc_id" {
+  description = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group#vpc_id"
+  type        = string
+}
+

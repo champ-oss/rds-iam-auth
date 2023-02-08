@@ -1,7 +1,7 @@
 resource "aws_sqs_queue" "this" {
   name                       = var.git
-  visibility_timeout_seconds = 30
-  message_retention_seconds  = 4 * 60 * 60
+  visibility_timeout_seconds = var.retry_delay_seconds
+  message_retention_seconds  = var.retry_timeout_minutes * 60
   tags                       = merge(local.tags, var.tags)
   sqs_managed_sse_enabled    = true
 }
