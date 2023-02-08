@@ -89,6 +89,6 @@ func (m *MysqlClient) CloseDb() {
 // closeRows closes rows
 func closeRows(rows *sql.Rows) {
 	if err := rows.Close(); err != nil {
-		log.Fatalf("unable to close db rows: %s", err)
+		log.Debugf("unable to close db rows: %s", err)
 	}
 }
