@@ -126,46 +126,34 @@ func (s *Service) createMysqlIamUsers(mysqlClient mysql_client.MysqlClientInterf
 	defer mysqlClient.CloseDb()
 
 	log.Infof("creating read only user: %s", s.config.DbIamReadUsername)
-	result, err := mysqlClient.Query("CREATE USER IF NOT EXISTS '" + s.config.DbIamReadUsername + "'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'")
-	if err != nil {
+	if err := mysqlClient.Query("CREATE USER IF NOT EXISTS '" + s.config.DbIamReadUsername + "'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'"); err != nil {
 		return err
 	}
-	log.Debug(result)
 
 	log.Info("setting read only user permissions")
-	result, err = mysqlClient.Query("GRANT SELECT ON *.* TO " + s.config.DbIamReadUsername)
-	if err != nil {
+	if err := mysqlClient.Query("GRANT SELECT ON *.* TO " + s.config.DbIamReadUsername); err != nil {
 		return err
 	}
-	log.Debug(result)
 
 	log.Infof("creating admin user: %s", s.config.DbIamAdminUsername)
-	result, err = mysqlClient.Query("CREATE USER IF NOT EXISTS '" + s.config.DbIamAdminUsername + "'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'")
-	if err != nil {
+	if err := mysqlClient.Query("CREATE USER IF NOT EXISTS '" + s.config.DbIamAdminUsername + "'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'"); err != nil {
 		return err
 	}
-	log.Debug(result)
 
 	log.Info("setting admin user permissions")
-	result, err = mysqlClient.Query("GRANT ALL PRIVILEGES ON `%`.* TO " + s.config.DbIamAdminUsername)
-	if err != nil {
+	if err := mysqlClient.Query("GRANT ALL PRIVILEGES ON `%`.* TO " + s.config.DbIamAdminUsername); err != nil {
 		return err
 	}
-	log.Debug(result)
 
 	log.Info("flushing privileges")
-	result, err = mysqlClient.Query("FLUSH PRIVILEGES")
-	if err != nil {
+	if err := mysqlClient.Query("FLUSH PRIVILEGES"); err != nil {
 		return err
 	}
-	log.Debug(result)
 
 	log.Info("checking users")
-	result, err = mysqlClient.Query("SELECT Host, User FROM user")
-	if err != nil {
+	if err := mysqlClient.Query("SELECT Host, User FROM user"); err != nil {
 		return err
 	}
-	log.Debug(result)
 
 	return nil
 }

@@ -13,7 +13,7 @@ import (
 
 type MysqlClientInterface interface {
 	CloseDb()
-	Query(sql string) (string, error)
+	Query(sql string) error
 }
 
 type MysqlClient struct {
@@ -33,6 +33,7 @@ func NewMysqlClient(config *cfg.Config, mySQLConnectionInfo common.MySQLConnecti
 	}, nil
 }
 
+// connect creates a connection to the mysql server
 func connect(mySQLConnectionInfo common.MySQLConnectionInfo) (*sql.DB, error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?tls=skip-verify&allowCleartextPasswords=true",
 		mySQLConnectionInfo.Username, mySQLConnectionInfo.Password, mySQLConnectionInfo.Endpoint, mySQLConnectionInfo.Port, mySQLConnectionInfo.Database)
@@ -55,29 +56,33 @@ func connect(mySQLConnectionInfo common.MySQLConnectionInfo) (*sql.DB, error) {
 	return db, err
 }
 
-func (m *MysqlClient) Query(sql string) (string, error) {
+// Query executes the given sql query and returns an error
+func (m *MysqlClient) Query(sql string) error {
 	log.Debug(sql)
 	rows, err := m.db.Query(sql)
 	defer closeRows(rows)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	var results []byte
 	for rows.Next() {
+		var results []byte
 		if err := rows.Scan(&results); err != nil {
-			return "", err
+			return err
 		}
+		log.Debugf("query result: %s", results)
 	}
-	return string(results), nil
+	return nil
 }
 
+// CloseDb closes the DB connection
 func (m *MysqlClient) CloseDb() {
 	if err := m.db.Close(); err != nil {
 		log.Fatalf("unable to close db connection: %s", err)
 	}
 }
 
+// closeRows closes rows
 func closeRows(rows *sql.Rows) {
 	if err := rows.Close(); err != nil {
 		log.Fatalf("unable to close db rows: %s", err)

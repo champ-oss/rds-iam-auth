@@ -54,12 +54,12 @@ func Test_Run_with_cluster_no_error(t *testing.T) {
 
 	ssmClient.EXPECT().GetValue("cluster1-password").Return("password1", nil)
 
-	mysqlClient.EXPECT().Query("CREATE USER IF NOT EXISTS 'readUser'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'").Return("success", nil)
-	mysqlClient.EXPECT().Query("GRANT SELECT ON *.* TO readUser").Return("success", nil)
-	mysqlClient.EXPECT().Query("CREATE USER IF NOT EXISTS 'adminUser'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'").Return("success", nil)
-	mysqlClient.EXPECT().Query("GRANT ALL PRIVILEGES ON `%`.* TO adminUser").Return("success", nil)
-	mysqlClient.EXPECT().Query("FLUSH PRIVILEGES").Return("success", nil)
-	mysqlClient.EXPECT().Query("SELECT Host, User FROM user").Return("success", nil)
+	mysqlClient.EXPECT().Query("CREATE USER IF NOT EXISTS 'readUser'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'").Return(nil)
+	mysqlClient.EXPECT().Query("GRANT SELECT ON *.* TO readUser").Return(nil)
+	mysqlClient.EXPECT().Query("CREATE USER IF NOT EXISTS 'adminUser'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'").Return(nil)
+	mysqlClient.EXPECT().Query("GRANT ALL PRIVILEGES ON `%`.* TO adminUser").Return(nil)
+	mysqlClient.EXPECT().Query("FLUSH PRIVILEGES").Return(nil)
+	mysqlClient.EXPECT().Query("SELECT Host, User FROM user").Return(nil)
 	mysqlClient.EXPECT().CloseDb()
 
 	message := events.SQSMessage{Body: "cluster|cluster1"}
@@ -90,12 +90,12 @@ func Test_Run_with_instance_no_error(t *testing.T) {
 
 	ssmClient.EXPECT().GetValue("instance1-password").Return("password1", nil)
 
-	mysqlClient.EXPECT().Query("CREATE USER IF NOT EXISTS 'readUser'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'").Return("success", nil)
-	mysqlClient.EXPECT().Query("GRANT SELECT ON *.* TO readUser").Return("success", nil)
-	mysqlClient.EXPECT().Query("CREATE USER IF NOT EXISTS 'adminUser'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'").Return("success", nil)
-	mysqlClient.EXPECT().Query("GRANT ALL PRIVILEGES ON `%`.* TO adminUser").Return("success", nil)
-	mysqlClient.EXPECT().Query("FLUSH PRIVILEGES").Return("success", nil)
-	mysqlClient.EXPECT().Query("SELECT Host, User FROM user").Return("success", nil)
+	mysqlClient.EXPECT().Query("CREATE USER IF NOT EXISTS 'readUser'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'").Return(nil)
+	mysqlClient.EXPECT().Query("GRANT SELECT ON *.* TO readUser").Return(nil)
+	mysqlClient.EXPECT().Query("CREATE USER IF NOT EXISTS 'adminUser'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'").Return(nil)
+	mysqlClient.EXPECT().Query("GRANT ALL PRIVILEGES ON `%`.* TO adminUser").Return(nil)
+	mysqlClient.EXPECT().Query("FLUSH PRIVILEGES").Return(nil)
+	mysqlClient.EXPECT().Query("SELECT Host, User FROM user").Return(nil)
 	mysqlClient.EXPECT().CloseDb()
 
 	message := events.SQSMessage{Body: "instance|instance1"}
@@ -186,7 +186,7 @@ func Test_Run_with_error_running_mysql_query(t *testing.T) {
 
 	ssmClient.EXPECT().GetValue("cluster1-password").Return("password1", nil)
 
-	mysqlClient.EXPECT().Query("CREATE USER IF NOT EXISTS 'readUser'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'").Return("failure", fmt.Errorf("some error"))
+	mysqlClient.EXPECT().Query("CREATE USER IF NOT EXISTS 'readUser'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'").Return(fmt.Errorf("some error"))
 	mysqlClient.EXPECT().CloseDb()
 
 	message := events.SQSMessage{Body: "cluster|cluster1"}

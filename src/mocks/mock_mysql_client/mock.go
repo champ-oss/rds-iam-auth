@@ -46,12 +46,11 @@ func (mr *MockMysqlClientInterfaceMockRecorder) CloseDb() *gomock.Call {
 }
 
 // Query mocks base method.
-func (m *MockMysqlClientInterface) Query(sql string) (string, error) {
+func (m *MockMysqlClientInterface) Query(sql string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Query", sql)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // Query indicates an expected call of Query.
