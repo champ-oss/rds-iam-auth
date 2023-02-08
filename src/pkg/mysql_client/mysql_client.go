@@ -60,10 +60,10 @@ func connect(mySQLConnectionInfo common.MySQLConnectionInfo) (*sql.DB, error) {
 func (m *MysqlClient) Query(sql string) error {
 	log.Debug(sql)
 	rows, err := m.db.Query(sql)
-	defer closeRows(rows)
 	if err != nil {
 		return err
 	}
+	defer closeRows(rows)
 
 	columns, _ := rows.Columns()
 	for rows.Next() {
@@ -72,7 +72,7 @@ func (m *MysqlClient) Query(sql string) error {
 			values[i] = new(interface{})
 		}
 		if err := rows.Scan(values...); err != nil {
-			return err
+			log.Debug(err)
 		}
 		log.Debugf("query result: %s", values)
 	}
