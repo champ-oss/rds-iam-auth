@@ -65,12 +65,16 @@ func (m *MysqlClient) Query(sql string) error {
 		return err
 	}
 
+	columns, _ := rows.Columns()
 	for rows.Next() {
-		var results []byte
-		if err := rows.Scan(&results); err != nil {
+		values := make([]interface{}, len(columns))
+		for i := range values {
+			values[i] = new(interface{})
+		}
+		if err := rows.Scan(values...); err != nil {
 			return err
 		}
-		log.Debugf("query result: %s", results)
+		log.Debugf("query result: %s", values)
 	}
 	return nil
 }
