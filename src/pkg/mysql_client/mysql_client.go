@@ -65,16 +65,10 @@ func (m *MysqlClient) Query(sql string) error {
 	}
 	defer closeRows(rows)
 
-	columns, _ := rows.Columns()
 	for rows.Next() {
-		values := make([]interface{}, len(columns))
-		for i := range values {
-			values[i] = new(interface{})
-		}
-		if err := rows.Scan(values...); err != nil {
-			log.Debug(err)
-		}
-		log.Debugf("query result: %s", values)
+		var results []byte
+		_ = rows.Scan(&results)
+		log.Debugf("query result: %s", results)
 	}
 	return nil
 }
@@ -82,13 +76,13 @@ func (m *MysqlClient) Query(sql string) error {
 // CloseDb closes the DB connection
 func (m *MysqlClient) CloseDb() {
 	if err := m.db.Close(); err != nil {
-		log.Fatalf("unable to close db connection: %s", err)
+		log.Errorf("unable to close db connection: %s", err)
 	}
 }
 
 // closeRows closes rows
 func closeRows(rows *sql.Rows) {
 	if err := rows.Close(); err != nil {
-		log.Debugf("unable to close db rows: %s", err)
+		log.Errorf("unable to close db rows: %s", err)
 	}
 }
