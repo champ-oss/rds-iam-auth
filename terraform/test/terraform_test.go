@@ -54,8 +54,8 @@ func getAWSConfig(region string) aws.Config {
 
 // invokeLambda calls an AWS lambda function and waits for the result
 func invokeLambda(region, functionName string) {
-	log.Infof("invoking lambda %s", functionName)
 	client := lambda.NewFromConfig(getAWSConfig(region))
+	log.Infof("invoking lambda %s", functionName)
 	output, err := client.Invoke(context.TODO(), &lambda.InvokeInput{
 		FunctionName:   aws.String(functionName),
 		InvocationType: "RequestResponse",
@@ -65,7 +65,6 @@ func invokeLambda(region, functionName string) {
 		log.Fatal(err)
 	}
 	log.Info(output.StatusCode)
-	log.Info(*output.LogResult)
 }
 
 // checkDatabaseConnection logs into a MySQL database using IAM credentials

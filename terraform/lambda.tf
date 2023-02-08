@@ -1,7 +1,8 @@
 module "lambda" {
   source              = "github.com/champ-oss/terraform-aws-lambda.git?ref=v1.0.111-919a6e1"
   git                 = var.git
-  name                = "lambda"
+  name                = "rds-iam-auth"
+  description         = "https://github.com/champ-oss/rds-iam-auth"
   enable_vpc          = true
   vpc_id              = var.vpc_id
   private_subnet_ids  = var.private_subnet_ids
