@@ -67,7 +67,7 @@ func (m *MysqlClient) Query(sqlStatement string) error {
 
 	columns, _ := rows.Columns()
 	resultValues := make([]interface{}, len(columns))
-	for i, _ := range columns {
+	for i := range columns {
 		resultValues[i] = new(sql.RawBytes)
 	}
 
