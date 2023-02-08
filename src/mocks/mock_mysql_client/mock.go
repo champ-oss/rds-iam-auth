@@ -5,10 +5,8 @@
 package mock_mysql_client
 
 import (
-	sql "database/sql"
 	reflect "reflect"
 
-	common "github.com/champ-oss/rds-iam-auth/pkg/common"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -35,17 +33,29 @@ func (m *MockMysqlClientInterface) EXPECT() *MockMysqlClientInterfaceMockRecorde
 	return m.recorder
 }
 
-// Connect mocks base method.
-func (m *MockMysqlClientInterface) Connect(mySQLConnectionInfo common.MySQLConnectionInfo) (*sql.DB, error) {
+// CloseDb mocks base method.
+func (m *MockMysqlClientInterface) CloseDb() {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Connect", mySQLConnectionInfo)
-	ret0, _ := ret[0].(*sql.DB)
+	m.ctrl.Call(m, "CloseDb")
+}
+
+// CloseDb indicates an expected call of CloseDb.
+func (mr *MockMysqlClientInterfaceMockRecorder) CloseDb() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseDb", reflect.TypeOf((*MockMysqlClientInterface)(nil).CloseDb))
+}
+
+// Query mocks base method.
+func (m *MockMysqlClientInterface) Query(sql string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Query", sql)
+	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Connect indicates an expected call of Connect.
-func (mr *MockMysqlClientInterfaceMockRecorder) Connect(mySQLConnectionInfo interface{}) *gomock.Call {
+// Query indicates an expected call of Query.
+func (mr *MockMysqlClientInterfaceMockRecorder) Query(sql interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockMysqlClientInterface)(nil).Connect), mySQLConnectionInfo)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Query", reflect.TypeOf((*MockMysqlClientInterface)(nil).Query), sql)
 }

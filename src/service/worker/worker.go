@@ -3,57 +3,39 @@ package worker
 import (
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-sdk-go-v2/service/rds/types"
 	cfg "github.com/champ-oss/rds-iam-auth/config"
 	"github.com/champ-oss/rds-iam-auth/pkg/common"
 	"github.com/champ-oss/rds-iam-auth/pkg/mysql_client"
 	"github.com/champ-oss/rds-iam-auth/pkg/rds_client"
 	"github.com/champ-oss/rds-iam-auth/pkg/ssm_client"
 	log "github.com/sirupsen/logrus"
-	"strings"
 )
 
 type Service struct {
-	config      *cfg.Config
-	rdsClient   rds_client.RdsClientInterface
-	ssmClient   ssm_client.SsmClientInterface
-	mysqlClient mysql_client.MysqlClientInterface
+	config    *cfg.Config
+	rdsClient rds_client.RdsClientInterface
+	ssmClient ssm_client.SsmClientInterface
 }
 
 // NewService creates a new instance of this service
-func NewService(config *cfg.Config, rdsClient rds_client.RdsClientInterface, ssmClient ssm_client.SsmClientInterface, mysqlClient mysql_client.MysqlClientInterface) *Service {
+func NewService(config *cfg.Config, rdsClient rds_client.RdsClientInterface, ssmClient ssm_client.SsmClientInterface) *Service {
 	return &Service{
-		config:      config,
-		rdsClient:   rdsClient,
-		ssmClient:   ssmClient,
-		mysqlClient: mysqlClient,
+		config:    config,
+		rdsClient: rdsClient,
+		ssmClient: ssmClient,
 	}
 }
 
 // Run is the entrypoint for this service
-func (s *Service) Run(message events.SQSMessage) error {
-	rdsType, rdsIdentifier, err := parseSqsMessage(message)
+func (s *Service) Run(message events.SQSMessage, mysqlClient mysql_client.MysqlClientInterface) error {
+	rdsType, rdsIdentifier, err := common.ParseSqsMessage(message)
 	if err != nil {
 		return err
 	}
 
-	var mySQLConnectionInfo common.MySQLConnectionInfo
-
-	switch rdsType {
-	case common.RdsTypeClusterKey:
-		mySQLConnectionInfo, err = s.getDBClusterInfo(rdsIdentifier)
-		if err != nil {
-			return err
-		}
-
-	case common.RdsTypeInstanceKey:
-		mySQLConnectionInfo, err = s.getDBInstanceInfo(rdsIdentifier)
-		if err != nil {
-			return err
-		}
-
-	default:
-		return fmt.Errorf("unrecognized RDS type: %s", rdsType)
+	mySQLConnectionInfo, err := s.getConnectionInfo(rdsType, rdsIdentifier)
+	if err != nil {
+		return err
 	}
 
 	mySQLConnectionInfo.Password, err = s.findPassword(rdsIdentifier)
@@ -61,12 +43,23 @@ func (s *Service) Run(message events.SQSMessage) error {
 		return err
 	}
 
-	_, err = s.mysqlClient.Connect(mySQLConnectionInfo)
-	if err != nil {
-		return err
-	}
+	return s.createMysqlIamUsers(mysqlClient, mySQLConnectionInfo)
+}
 
-	return nil
+// getConnectionInfo gets connection information and returns common.MySQLConnectionInfo
+func (s *Service) getConnectionInfo(rdsType, rdsIdentifier string) (common.MySQLConnectionInfo, error) {
+	switch rdsType {
+	case common.RdsTypeClusterKey:
+		mySQLConnectionInfo, err := s.getDBClusterInfo(rdsIdentifier)
+		return mySQLConnectionInfo, err
+
+	case common.RdsTypeInstanceKey:
+		mySQLConnectionInfo, err := s.getDBInstanceInfo(rdsIdentifier)
+		return mySQLConnectionInfo, err
+
+	default:
+		return common.MySQLConnectionInfo{}, fmt.Errorf("unrecognized RDS type: %s", rdsType)
+	}
 }
 
 // getDBClusterInfo retrieves connection information for the RDS cluster
@@ -82,7 +75,7 @@ func (s *Service) getDBClusterInfo(rdsIdentifier string) (common.MySQLConnection
 		Port:           *cluster.Port,
 		Username:       *cluster.MasterUsername,
 		Database:       *cluster.DatabaseName,
-		SecurityGroups: getSecurityGroupIds(cluster.VpcSecurityGroups),
+		SecurityGroups: common.GetSecurityGroupIds(cluster.VpcSecurityGroups),
 	}
 	log.Debugf("%+v", mySQLConnectionInfo)
 	return mySQLConnectionInfo, nil
@@ -101,7 +94,7 @@ func (s *Service) getDBInstanceInfo(rdsIdentifier string) (common.MySQLConnectio
 		Port:           instance.Endpoint.Port,
 		Username:       *instance.MasterUsername,
 		Database:       *instance.DBName,
-		SecurityGroups: getSecurityGroupIds(instance.VpcSecurityGroups),
+		SecurityGroups: common.GetSecurityGroupIds(instance.VpcSecurityGroups),
 	}
 	log.Debugf("%+v", mySQLConnectionInfo)
 	return mySQLConnectionInfo, nil
@@ -121,23 +114,58 @@ func (s *Service) findPassword(rdsIdentifier string) (string, error) {
 	return "", fmt.Errorf("unable to find password in SSM")
 }
 
-// parseSqsMessage parses the RDS type and RDS identifier from the incoming SQS message body
-func parseSqsMessage(message events.SQSMessage) (rdsType string, rdsIdentifier string, err error) {
-	log.Debugf("sqs message body: %s", message.Body)
-	messageParts := strings.Split(message.Body, common.SqsMessageBodySeparator)
-	if len(messageParts) != 2 {
-		return "", "", fmt.Errorf("unable to parse sqs message: %s", message.Body)
+// createMysqlIamUsers executes the SQL queries to set up read-only and admin users for IAM authentication
+func (s *Service) createMysqlIamUsers(mysqlClient mysql_client.MysqlClientInterface, mySQLConnectionInfo common.MySQLConnectionInfo) error {
+	if mysqlClient == nil {
+		var err error
+		mysqlClient, err = mysql_client.NewMysqlClient(s.config, mySQLConnectionInfo)
+		if err != nil {
+			return err
+		}
 	}
-	rdsType = messageParts[0]
-	rdsIdentifier = messageParts[1]
-	return rdsType, rdsIdentifier, nil
-}
+	defer mysqlClient.CloseDb()
 
-// getSecurityGroupIds parses the security groups into a slice of strings
-func getSecurityGroupIds(vpcSecurityGroups []types.VpcSecurityGroupMembership) []string {
-	var securityGroups []string
-	for _, sg := range vpcSecurityGroups {
-		securityGroups = append(securityGroups, *sg.VpcSecurityGroupId)
+	log.Infof("creating read only user: %s", s.config.DbIamReadUsername)
+	result, err := mysqlClient.Query("CREATE USER IF NOT EXISTS '" + s.config.DbIamReadUsername + "'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'")
+	if err != nil {
+		return err
 	}
-	return securityGroups
+	log.Debug(result)
+
+	log.Info("setting read only user permissions")
+	result, err = mysqlClient.Query("GRANT SELECT ON *.* TO " + s.config.DbIamReadUsername)
+	if err != nil {
+		return err
+	}
+	log.Debug(result)
+
+	log.Infof("creating admin user: %s", s.config.DbIamAdminUsername)
+	result, err = mysqlClient.Query("CREATE USER IF NOT EXISTS '" + s.config.DbIamAdminUsername + "'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'")
+	if err != nil {
+		return err
+	}
+	log.Debug(result)
+
+	log.Info("setting admin user permissions")
+	result, err = mysqlClient.Query("GRANT ALL PRIVILEGES ON `%`.* TO " + s.config.DbIamAdminUsername)
+	if err != nil {
+		return err
+	}
+	log.Debug(result)
+
+	log.Info("flushing privileges")
+	result, err = mysqlClient.Query("FLUSH PRIVILEGES")
+	if err != nil {
+		return err
+	}
+	log.Debug(result)
+
+	log.Info("checking users")
+	result, err = mysqlClient.Query("SELECT Host, User FROM user")
+	if err != nil {
+		return err
+	}
+	log.Debug(result)
+
+	return nil
 }

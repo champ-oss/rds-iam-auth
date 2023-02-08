@@ -5,7 +5,6 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	cfg "github.com/champ-oss/rds-iam-auth/config"
-	"github.com/champ-oss/rds-iam-auth/pkg/mysql_client"
 	"github.com/champ-oss/rds-iam-auth/pkg/rds_client"
 	"github.com/champ-oss/rds-iam-auth/pkg/sqs_client"
 	"github.com/champ-oss/rds-iam-auth/pkg/ssm_client"
@@ -24,9 +23,8 @@ func init() {
 	rdsClient := rds_client.NewRdsClient(config)
 	sqsClient := sqs_client.NewSqsClient(config)
 	ssmClient := ssm_client.NewSqsClient(config)
-	mysqlClient := mysql_client.NewMysqlClient(config)
 	schedulerService = scheduler.NewService(config, rdsClient, sqsClient)
-	workerService = worker.NewService(config, rdsClient, ssmClient, mysqlClient)
+	workerService = worker.NewService(config, rdsClient, ssmClient)
 }
 
 func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
@@ -37,7 +35,7 @@ func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
 
 	for _, message := range sqsEvent.Records {
 		log.Warning("triggered from sqs message")
-		if err := workerService.Run(message); err != nil {
+		if err := workerService.Run(message, nil); err != nil {
 			return err
 		}
 	}
