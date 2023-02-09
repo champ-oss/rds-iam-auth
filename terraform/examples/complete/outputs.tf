@@ -11,7 +11,8 @@ output "test_mysql_master_username" {
 }
 
 output "test_mysql_master_password" {
-  value = module.mysql.password
+  value     = module.mysql.password
+  sensitive = true
 }
 
 output "test_aurora_endpoint" {
@@ -23,7 +24,8 @@ output "test_aurora_master_username" {
 }
 
 output "test_aurora_master_password" {
-  value = module.aurora.master_password
+  value     = module.aurora.master_password
+  sensitive = true
 }
 
 output "function_name" {
