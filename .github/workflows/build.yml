@@ -31,3 +31,4 @@ jobs:
           cache-to: type=inline
           tags: |
             ${{ env.REPO }}:${{ env.SHA }}
+            ${{ env.REPO }}:latest
