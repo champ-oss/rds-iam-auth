@@ -13,7 +13,7 @@ data "aws_iam_policy_document" "this" {
 }
 
 resource "aws_iam_policy" "this" {
-  name_prefix = var.git
+  name_prefix = "${var.git}-rds-iam-auth"
   policy      = data.aws_iam_policy_document.this.json
 }
 

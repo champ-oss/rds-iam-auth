@@ -16,7 +16,7 @@ import (
 
 var config *cfg.Config
 var schedulerService *scheduler.Service
-var runnerService *worker.Service
+var workerService *worker.Service
 
 func init() {
 	config = cfg.LoadConfig()
@@ -24,7 +24,7 @@ func init() {
 	sqsClient := sqs_client.NewSqsClient(config)
 	ssmClient := ssm_client.NewSqsClient(config)
 	schedulerService = scheduler.NewService(config, rdsClient, sqsClient)
-	runnerService = worker.NewService(config, rdsClient, ssmClient)
+	workerService = worker.NewService(config, rdsClient, ssmClient)
 }
 
 func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
@@ -35,7 +35,7 @@ func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
 
 	for _, message := range sqsEvent.Records {
 		log.Warning("triggered from sqs message")
-		if err := runnerService.Run(message); err != nil {
+		if err := workerService.Run(message, nil); err != nil {
 			return err
 		}
 	}
@@ -46,16 +46,18 @@ func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
 func main() {
 	if os.Getenv("AWS_LAMBDA_RUNTIME_API") == "" {
 		// Support running the code locally
-		_ = handler(context.TODO(), events.SQSEvent{
+		if err := handler(context.TODO(), events.SQSEvent{
 			Records: []events.SQSMessage{
 				{
-					Body: "cluster|rds-iam-auth-20230202151930094200000014",
+					Body: "cluster|rds-iam-auth-20230208151203633200000014",
 				},
 				{
 					Body: "instance|rds-iam-auth",
 				},
 			},
-		})
+		}); err != nil {
+			panic(err)
+		}
 	} else {
 		lambda.Start(handler)
 	}
