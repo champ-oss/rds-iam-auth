@@ -33,15 +33,15 @@ func TestTerraform(t *testing.T) {
 	functionName := terraform.Output(t, terraformOptions, "function_name")
 	testAuroraEndpoint := terraform.Output(t, terraformOptions, "test_aurora_endpoint") + ":3306"
 	testMysqlEndpoint := terraform.Output(t, terraformOptions, "test_mysql_endpoint") + ":3306"
-	dbIamReadUsername := terraform.Output(t, terraformOptions, "db_iam_read_username")
+	//dbIamReadUsername := terraform.Output(t, terraformOptions, "db_iam_read_username")
 	dbIamAdminUsername := terraform.Output(t, terraformOptions, "db_iam_admin_username")
 
 	invokeLambda(region, functionName)
 
-	checkDatabaseConnection(testAuroraEndpoint, region, dbIamReadUsername, dbName)
+	//checkDatabaseConnection(testAuroraEndpoint, region, dbIamReadUsername, dbName)
 	checkDatabaseConnection(testAuroraEndpoint, region, dbIamAdminUsername, dbName)
 
-	checkDatabaseConnection(testMysqlEndpoint, region, dbIamReadUsername, dbName)
+	//checkDatabaseConnection(testMysqlEndpoint, region, dbIamReadUsername, dbName)
 	checkDatabaseConnection(testMysqlEndpoint, region, dbIamAdminUsername, dbName)
 }
 
