@@ -28,17 +28,21 @@ func TestTerraform(t *testing.T) {
 	//defer terraform.Destroy(t, terraformOptions)
 	terraform.InitAndApplyAndIdempotent(t, terraformOptions)
 
-	dbUser := "db_iam_read"
 	dbName := "this"
 	region := terraform.Output(t, terraformOptions, "region")
 	functionName := terraform.Output(t, terraformOptions, "function_name")
 	testAuroraEndpoint := terraform.Output(t, terraformOptions, "test_aurora_endpoint") + ":3306"
 	testMysqlEndpoint := terraform.Output(t, terraformOptions, "test_mysql_endpoint") + ":3306"
+	dbIamReadUsername := terraform.Output(t, terraformOptions, "db_iam_read_username")
+	dbIamAdminUsername := terraform.Output(t, terraformOptions, "db_iam_admin_username")
 
 	invokeLambda(region, functionName)
 
-	checkDatabaseConnection(testAuroraEndpoint, region, dbUser, dbName)
-	checkDatabaseConnection(testMysqlEndpoint, region, dbUser, dbName)
+	checkDatabaseConnection(testAuroraEndpoint, region, dbIamReadUsername, dbName)
+	checkDatabaseConnection(testAuroraEndpoint, region, dbIamAdminUsername, dbName)
+
+	checkDatabaseConnection(testMysqlEndpoint, region, dbIamReadUsername, dbName)
+	checkDatabaseConnection(testMysqlEndpoint, region, dbIamAdminUsername, dbName)
 }
 
 // getAWSConfig Logs in to AWS and return a config
@@ -88,4 +92,10 @@ func checkDatabaseConnection(dbEndpoint, region, dbUser, dbName string) {
 		log.Fatal(err)
 	}
 	log.Info("connected successfully")
+
+	// Delete the user to reset the test for the next run
+	_, err = db.Query("DROP USER IF EXISTS " + dbUser)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
