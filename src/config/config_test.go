@@ -47,6 +47,21 @@ func Test_ParseString_unset(t *testing.T) {
 	assert.Equal(t, "something", parseString("FOO", "something"))
 }
 
+func Test_parseCommaSeparated_success(t *testing.T) {
+	_ = os.Setenv("FOO", "foo,bar")
+	assert.Equal(t, []string{"foo", "bar"}, parseCommaSeparated("FOO", []string{"something"}))
+}
+
+func Test_parseCommaSeparated_empty(t *testing.T) {
+	_ = os.Setenv("FOO", "")
+	assert.Equal(t, []string{"foo", "bar"}, parseCommaSeparated("FOO", []string{"foo", "bar"}))
+}
+
+func Test_parseCommaSeparated_unset(t *testing.T) {
+	os.Clearenv()
+	assert.Equal(t, []string{"foo", "bar"}, parseCommaSeparated("FOO", []string{"foo", "bar"}))
+}
+
 func Test_LoadConfig(t *testing.T) {
 	_ = os.Setenv("DEBUG", "true")
 	_ = os.Setenv("AWS_REGION", "us-west-1")
