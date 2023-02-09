@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/rds/auth"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	log "github.com/sirupsen/logrus"
 	"os"
@@ -32,10 +33,10 @@ func TestTerraform(t *testing.T) {
 	functionName := terraform.Output(t, terraformOptions, "function_name")
 	testAuroraEndpoint := terraform.Output(t, terraformOptions, "test_aurora_endpoint") + ":3306"
 	testAuroraMasterUsername := terraform.Output(t, terraformOptions, "test_aurora_master_username")
-	testAuroraMasterPassword := terraform.Output(t, terraformOptions, "test_aurora_master_password")
+	testAuroraMasterPassword := fetchSensitiveOutput(t, terraformOptions, "test_aurora_master_password")
 	testMysqlEndpoint := terraform.Output(t, terraformOptions, "test_mysql_endpoint") + ":3306"
 	testMysqlMasterUsername := terraform.Output(t, terraformOptions, "test_mysql_master_username")
-	testMysqlMasterPassword := terraform.Output(t, terraformOptions, "test_mysql_master_password")
+	testMysqlMasterPassword := fetchSensitiveOutput(t, terraformOptions, "test_mysql_master_password")
 	dbIamReadUsername := terraform.Output(t, terraformOptions, "db_iam_read_username")
 	dbIamAdminUsername := terraform.Output(t, terraformOptions, "db_iam_admin_username")
 
@@ -126,4 +127,13 @@ func dropUsers(dbEndpoint, loginUser, loginPassword, dbName string, dropUsers []
 			log.Fatal(err)
 		}
 	}
+}
+
+// fetchSensitiveOutput gets an output from Terrform without logging the value
+func fetchSensitiveOutput(t *testing.T, options *terraform.Options, name string) string {
+	defer func() {
+		options.Logger = nil
+	}()
+	options.Logger = logger.Discard
+	return terraform.Output(t, options, name)
 }
