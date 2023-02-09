@@ -64,7 +64,12 @@ func (m *MysqlClient) Query(sqlStatement string) error {
 		return err
 	}
 	defer closeRows(rows)
+	logQueryResultRows(rows)
+	return nil
+}
 
+// logQueryResultRows parses the output of a SQL query as sql.RawBytes and logs the results as string
+func logQueryResultRows(rows *sql.Rows) {
 	columns, _ := rows.Columns()
 	resultValues := make([]interface{}, len(columns))
 	for i := range columns {
@@ -79,7 +84,6 @@ func (m *MysqlClient) Query(sqlStatement string) error {
 		}
 		log.Debugf("query result:%s", logOutput)
 	}
-	return nil
 }
 
 // CloseDb closes the DB connection
