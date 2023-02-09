@@ -47,3 +47,18 @@ func (mr *MockSsmClientInterfaceMockRecorder) GetValue(name interface{}) *gomock
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetValue", reflect.TypeOf((*MockSsmClientInterface)(nil).GetValue), name)
 }
+
+// Search mocks base method.
+func (m *MockSsmClientInterface) Search(name string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Search", name)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Search indicates an expected call of Search.
+func (mr *MockSsmClientInterfaceMockRecorder) Search(name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Search", reflect.TypeOf((*MockSsmClientInterface)(nil).Search), name)
+}
