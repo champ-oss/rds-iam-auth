@@ -1,7 +1,8 @@
 module "lambda" {
-  source              = "github.com/champ-oss/terraform-aws-lambda.git?ref=v1.0.111-919a6e1"
+  source              = "github.com/champ-oss/terraform-aws-lambda.git?ref=v1.0.113-5b5a6fe"
   git                 = var.git
-  name                = "lambda"
+  name                = "rds-iam-auth"
+  description         = "https://github.com/champ-oss/rds-iam-auth"
   enable_vpc          = true
   vpc_id              = var.vpc_id
   private_subnet_ids  = var.private_subnet_ids
@@ -10,10 +11,13 @@ module "lambda" {
   ecr_name            = "${var.git}-lambda"
   ecr_tag             = module.hash.hash
   enable_cw_event     = true
-  schedule_expression = "rate(1 hour)"
+  schedule_expression = var.schedule_expression
   tags                = merge(local.tags, var.tags)
   environment = {
-    QUEUE_URL = aws_sqs_queue.this.url
+    QUEUE_URL             = aws_sqs_queue.this.url
+    DB_IAM_READ_USERNAME  = var.db_iam_read_username
+    DB_IAM_ADMIN_USERNAME = var.db_iam_admin_username
+    SSM_SEARCH_PATTERNS   = join(",", var.ssm_search_patterns)
   }
 }
 

@@ -3,13 +3,12 @@ package worker
 import (
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-sdk-go-v2/service/rds/types"
 	cfg "github.com/champ-oss/rds-iam-auth/config"
 	"github.com/champ-oss/rds-iam-auth/pkg/common"
+	"github.com/champ-oss/rds-iam-auth/pkg/mysql_client"
 	"github.com/champ-oss/rds-iam-auth/pkg/rds_client"
 	"github.com/champ-oss/rds-iam-auth/pkg/ssm_client"
 	log "github.com/sirupsen/logrus"
-	"strings"
 )
 
 type Service struct {
@@ -28,29 +27,15 @@ func NewService(config *cfg.Config, rdsClient rds_client.RdsClientInterface, ssm
 }
 
 // Run is the entrypoint for this service
-func (s *Service) Run(message events.SQSMessage) error {
-	rdsType, rdsIdentifier, err := parseSqsMessage(message)
+func (s *Service) Run(message events.SQSMessage, mysqlClient mysql_client.MysqlClientInterface) error {
+	rdsType, rdsIdentifier, err := common.ParseSqsMessage(message)
 	if err != nil {
 		return err
 	}
 
-	var mySQLConnectionInfo common.MySQLConnectionInfo
-
-	switch rdsType {
-	case common.RdsTypeClusterKey:
-		mySQLConnectionInfo, err = s.getDBClusterInfo(rdsIdentifier)
-		if err != nil {
-			return err
-		}
-
-	case common.RdsTypeInstanceKey:
-		mySQLConnectionInfo, err = s.getDBInstanceInfo(rdsIdentifier)
-		if err != nil {
-			return err
-		}
-
-	default:
-		return fmt.Errorf("unrecognized RDS type: %s", rdsType)
+	mySQLConnectionInfo, err := s.getConnectionInfo(rdsType, rdsIdentifier)
+	if err != nil {
+		return err
 	}
 
 	mySQLConnectionInfo.Password, err = s.findPassword(rdsIdentifier)
@@ -58,12 +43,27 @@ func (s *Service) Run(message events.SQSMessage) error {
 		return err
 	}
 
-	return nil
+	return s.createMysqlIamUsers(mysqlClient, mySQLConnectionInfo)
+}
+
+// getConnectionInfo gets connection information and returns common.MySQLConnectionInfo
+func (s *Service) getConnectionInfo(rdsType, rdsIdentifier string) (common.MySQLConnectionInfo, error) {
+	switch rdsType {
+	case common.RdsTypeClusterKey:
+		mySQLConnectionInfo, err := s.getDBClusterInfo(rdsIdentifier)
+		return mySQLConnectionInfo, err
+
+	case common.RdsTypeInstanceKey:
+		mySQLConnectionInfo, err := s.getDBInstanceInfo(rdsIdentifier)
+		return mySQLConnectionInfo, err
+
+	default:
+		return common.MySQLConnectionInfo{}, fmt.Errorf("unrecognized RDS type: %s", rdsType)
+	}
 }
 
 // getDBClusterInfo retrieves connection information for the RDS cluster
 func (s *Service) getDBClusterInfo(rdsIdentifier string) (common.MySQLConnectionInfo, error) {
-	log.Infof("getting RDS cluster information for: %s", rdsIdentifier)
 	cluster, err := s.rdsClient.GetDBCluster(rdsIdentifier)
 	if err != nil {
 		return common.MySQLConnectionInfo{}, err
@@ -73,7 +73,8 @@ func (s *Service) getDBClusterInfo(rdsIdentifier string) (common.MySQLConnection
 		Endpoint:       *cluster.Endpoint,
 		Port:           *cluster.Port,
 		Username:       *cluster.MasterUsername,
-		SecurityGroups: getSecurityGroupIds(cluster.VpcSecurityGroups),
+		Database:       s.config.DefaultDatabase,
+		SecurityGroups: common.GetSecurityGroupIds(cluster.VpcSecurityGroups),
 	}
 	log.Debugf("%+v", mySQLConnectionInfo)
 	return mySQLConnectionInfo, nil
@@ -81,7 +82,6 @@ func (s *Service) getDBClusterInfo(rdsIdentifier string) (common.MySQLConnection
 
 // getDBInstanceInfo retrieves connection information for the RDS instance
 func (s *Service) getDBInstanceInfo(rdsIdentifier string) (common.MySQLConnectionInfo, error) {
-	log.Infof("getting RDS instance information for: %s", rdsIdentifier)
 	instance, err := s.rdsClient.GetDBInstance(rdsIdentifier)
 	if err != nil {
 		return common.MySQLConnectionInfo{}, err
@@ -91,7 +91,8 @@ func (s *Service) getDBInstanceInfo(rdsIdentifier string) (common.MySQLConnectio
 		Endpoint:       *instance.Endpoint.Address,
 		Port:           instance.Endpoint.Port,
 		Username:       *instance.MasterUsername,
-		SecurityGroups: getSecurityGroupIds(instance.VpcSecurityGroups),
+		Database:       s.config.DefaultDatabase,
+		SecurityGroups: common.GetSecurityGroupIds(instance.VpcSecurityGroups),
 	}
 	log.Debugf("%+v", mySQLConnectionInfo)
 	return mySQLConnectionInfo, nil
@@ -101,33 +102,61 @@ func (s *Service) getDBInstanceInfo(rdsIdentifier string) (common.MySQLConnectio
 func (s *Service) findPassword(rdsIdentifier string) (string, error) {
 	log.Infof("attempting to find password in SSM for RDS database: %s", rdsIdentifier)
 	for _, pattern := range s.config.SsmSearchPatterns {
-		// Example of search pattern: "/rds-iam-auth/mysql/%s/password"
-		result, _ := s.ssmClient.GetValue(fmt.Sprintf(pattern, rdsIdentifier))
-		if result != "" {
-			log.Info("password found in ssm")
-			return result, nil
+		// Example of search pattern: "/mysql/%s/password"
+		searchResults, _ := s.ssmClient.Search(fmt.Sprintf(pattern, rdsIdentifier))
+
+		if len(searchResults) == 1 {
+			log.Debugf("ssm parameter found matching pattern: %s", fmt.Sprintf(pattern, rdsIdentifier))
+			passwordValue, _ := s.ssmClient.GetValue(searchResults[0])
+			if passwordValue != "" {
+				log.Info("password found in ssm")
+				return passwordValue, nil
+			}
 		}
 	}
 	return "", fmt.Errorf("unable to find password in SSM")
 }
 
-// parseSqsMessage parses the RDS type and RDS identifier from the incoming SQS message body
-func parseSqsMessage(message events.SQSMessage) (rdsType string, rdsIdentifier string, err error) {
-	log.Debugf("sqs message body: %s", message.Body)
-	messageParts := strings.Split(message.Body, common.SqsMessageBodySeparator)
-	if len(messageParts) != 2 {
-		return "", "", fmt.Errorf("unable to parse sqs message: %s", message.Body)
+// createMysqlIamUsers executes the SQL queries to set up read-only and admin users for IAM authentication
+func (s *Service) createMysqlIamUsers(mysqlClient mysql_client.MysqlClientInterface, mySQLConnectionInfo common.MySQLConnectionInfo) error {
+	if mysqlClient == nil {
+		var err error
+		mysqlClient, err = mysql_client.NewMysqlClient(s.config, mySQLConnectionInfo)
+		if err != nil {
+			return err
+		}
 	}
-	rdsType = messageParts[0]
-	rdsIdentifier = messageParts[1]
-	return rdsType, rdsIdentifier, nil
-}
+	defer mysqlClient.CloseDb()
 
-// getSecurityGroupIds parses the security groups into a slice of strings
-func getSecurityGroupIds(vpcSecurityGroups []types.VpcSecurityGroupMembership) []string {
-	var securityGroups []string
-	for _, sg := range vpcSecurityGroups {
-		securityGroups = append(securityGroups, *sg.VpcSecurityGroupId)
+	log.Infof("creating read only user: %s", s.config.DbIamReadUsername)
+	if err := mysqlClient.Query("CREATE USER IF NOT EXISTS '" + s.config.DbIamReadUsername + "'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'"); err != nil {
+		return err
 	}
-	return securityGroups
+
+	log.Info("setting read only user permissions")
+	if err := mysqlClient.Query("GRANT SELECT ON *.* TO " + s.config.DbIamReadUsername); err != nil {
+		return err
+	}
+
+	log.Infof("creating admin user: %s", s.config.DbIamAdminUsername)
+	if err := mysqlClient.Query("CREATE USER IF NOT EXISTS '" + s.config.DbIamAdminUsername + "'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'"); err != nil {
+		return err
+	}
+
+	log.Info("setting admin user permissions")
+	if err := mysqlClient.Query("GRANT ALL PRIVILEGES ON `%`.* TO " + s.config.DbIamAdminUsername); err != nil {
+		return err
+	}
+
+	log.Info("flushing privileges")
+	if err := mysqlClient.Query("FLUSH PRIVILEGES"); err != nil {
+		return err
+	}
+
+	log.Info("checking users")
+	if err := mysqlClient.Query("SELECT Host, User FROM user"); err != nil {
+		return err
+	}
+
+	return nil
 }

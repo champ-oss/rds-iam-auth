@@ -21,6 +21,18 @@ data "aws_vpcs" "this" {
   }
 }
 
+data "aws_subnets" "public" {
+  tags = {
+    purpose = "vega"
+    Type    = "Public"
+  }
+
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpcs.this.ids[0]]
+  }
+}
+
 data "aws_subnets" "private" {
   tags = {
     purpose = "vega"
@@ -45,15 +57,17 @@ module "aurora" {
   protect                   = false
   skip_final_snapshot       = true
   vpc_id                    = data.aws_vpcs.this.ids[0]
-  private_subnet_ids        = data.aws_subnets.private.ids
+  private_subnet_ids        = data.aws_subnets.public.ids
   source_security_group_id  = aws_security_group.test.id
   tags                      = local.tags
+  publicly_accessible       = true
+  cidr_blocks               = ["0.0.0.0/0"]
 }
 
 module "mysql" {
-  source                   = "github.com/champ-oss/terraform-aws-mysql.git?ref=v1.0.162-468d0e0"
+  source                   = "github.com/champ-oss/terraform-aws-mysql.git?ref=v1.0.165-29d9cd6"
   vpc_id                   = data.aws_vpcs.this.ids[0]
-  private_subnet_ids       = data.aws_subnets.private.ids
+  private_subnet_ids       = data.aws_subnets.public.ids
   source_security_group_id = aws_security_group.test.id
   name_prefix              = local.git
   git                      = local.git
@@ -61,6 +75,8 @@ module "mysql" {
   protect                  = false
   tags                     = local.tags
   name                     = "test"
+  publicly_accessible      = true
+  cidr_blocks              = ["0.0.0.0/0"]
 }
 
 module "this" {
