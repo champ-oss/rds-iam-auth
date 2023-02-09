@@ -45,6 +45,15 @@ variable "schedule_expression" {
   default     = "cron(0 4 * * ? *)"
 }
 
+variable "ssm_search_patterns" {
+  description = "Search strings used to find the SSM parameter containing the database password"
+  type        = list(string)
+  default = [
+    "%s-mysql",
+    "/mysql/%s/password",
+  ]
+}
+
 variable "vpc_id" {
   description = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group#vpc_id"
   type        = string

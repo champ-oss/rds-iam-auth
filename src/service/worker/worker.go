@@ -102,11 +102,16 @@ func (s *Service) getDBInstanceInfo(rdsIdentifier string) (common.MySQLConnectio
 func (s *Service) findPassword(rdsIdentifier string) (string, error) {
 	log.Infof("attempting to find password in SSM for RDS database: %s", rdsIdentifier)
 	for _, pattern := range s.config.SsmSearchPatterns {
-		// Example of search pattern: "/rds-iam-auth/mysql/%s/password"
-		result, _ := s.ssmClient.GetValue(fmt.Sprintf(pattern, rdsIdentifier))
-		if result != "" {
-			log.Info("password found in ssm")
-			return result, nil
+		// Example of search pattern: "/mysql/%s/password"
+		searchResults, _ := s.ssmClient.Search(fmt.Sprintf(pattern, rdsIdentifier))
+
+		if len(searchResults) == 1 {
+			log.Debugf("ssm parameter found matching pattern: %s", fmt.Sprintf(pattern, rdsIdentifier))
+			passwordValue, _ := s.ssmClient.GetValue(searchResults[0])
+			if passwordValue != "" {
+				log.Info("password found in ssm")
+				return passwordValue, nil
+			}
 		}
 	}
 	return "", fmt.Errorf("unable to find password in SSM")

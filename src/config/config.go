@@ -23,13 +23,10 @@ type Config struct {
 // LoadConfig loads configuration values from environment variables
 func LoadConfig() *Config {
 	cfg := Config{
-		Debug:     parseBool("DEBUG", true),
-		AwsRegion: parseString("AWS_REGION", "us-east-2"),
-		QueueUrl:  parseString("QUEUE_URL", ""),
-		SsmSearchPatterns: []string{
-			"%s-mysql",
-			"/rds-iam-auth/mysql/%s/password",
-		},
+		Debug:              parseBool("DEBUG", true),
+		AwsRegion:          parseString("AWS_REGION", "us-east-2"),
+		QueueUrl:           parseString("QUEUE_URL", ""),
+		SsmSearchPatterns:  parseCommaSeparated("SSM_SEARCH_PATTERNS", []string{"%s-mysql"}),
 		DbIamReadUsername:  parseString("DB_IAM_READ_USERNAME", "db_iam_read"),
 		DbIamAdminUsername: parseString("DB_IAM_ADMIN_USERNAME", "db_iam_admin"),
 		DefaultDatabase:    parseString("DEFAULT_DATABASE", "mysql"),
@@ -80,4 +77,13 @@ func parseString(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+// parseCommaSeparated parses an environment variable as a slice of strings
+func parseCommaSeparated(key string, fallback []string) []string {
+	envValue := os.Getenv(key)
+	if envValue == "" {
+		return fallback
+	}
+	return strings.Split(envValue, ",")
 }

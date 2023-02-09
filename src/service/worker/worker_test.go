@@ -52,6 +52,7 @@ func Test_Run_with_cluster_no_error(t *testing.T) {
 		},
 	}, nil)
 
+	ssmClient.EXPECT().Search("cluster1-password").Return([]string{"cluster1-password"}, nil)
 	ssmClient.EXPECT().GetValue("cluster1-password").Return("password1", nil)
 
 	mysqlClient.EXPECT().Query("CREATE USER IF NOT EXISTS 'readUser'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'").Return(nil)
@@ -88,6 +89,7 @@ func Test_Run_with_instance_no_error(t *testing.T) {
 		DBName:         aws.String("this"),
 	}, nil)
 
+	ssmClient.EXPECT().Search("instance1-password").Return([]string{"instance1-password"}, nil)
 	ssmClient.EXPECT().GetValue("instance1-password").Return("password1", nil)
 
 	mysqlClient.EXPECT().Query("CREATE USER IF NOT EXISTS 'readUser'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'").Return(nil)
@@ -140,7 +142,7 @@ func Test_Run_error_finding_password(t *testing.T) {
 		DatabaseName:   aws.String("this"),
 	}, nil)
 
-	ssmClient.EXPECT().GetValue("cluster1-password").Return("", fmt.Errorf("unable to find"))
+	ssmClient.EXPECT().Search("cluster1-password").Return([]string{}, nil)
 
 	message := events.SQSMessage{Body: "cluster|cluster1"}
 	assert.ErrorContains(t, svc.Run(message, nil), "unable to find")
@@ -162,6 +164,7 @@ func Test_Run_with_error_connecting_mysql(t *testing.T) {
 		},
 	}, nil)
 
+	ssmClient.EXPECT().Search("cluster1-password").Return([]string{"cluster1-password"}, nil)
 	ssmClient.EXPECT().GetValue("cluster1-password").Return("password1", nil)
 
 	message := events.SQSMessage{Body: "cluster|cluster1"}
@@ -184,6 +187,7 @@ func Test_Run_with_error_running_mysql_query(t *testing.T) {
 		},
 	}, nil)
 
+	ssmClient.EXPECT().Search("cluster1-password").Return([]string{"cluster1-password"}, nil)
 	ssmClient.EXPECT().GetValue("cluster1-password").Return("password1", nil)
 
 	mysqlClient.EXPECT().Query("CREATE USER IF NOT EXISTS 'readUser'@'%' IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'").Return(fmt.Errorf("some error"))
