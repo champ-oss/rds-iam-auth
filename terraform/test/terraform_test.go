@@ -120,7 +120,7 @@ func dropUsers(dbEndpoint, loginUser, loginPassword, dbName string, dropUsers []
 	log.Info("connected successfully")
 
 	for _, user := range dropUsers {
-		log.Info("dropping user: %s", user)
+		log.Infof("dropping user: %s", user)
 		_, err = db.Query("DROP USER IF EXISTS " + user)
 		if err != nil {
 			log.Fatal(err)
