@@ -23,7 +23,7 @@ env:
   SLACK_URL: ${{ secrets.SLACK_URL }}
 
 jobs:
-  test:
+  go:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -36,7 +36,7 @@ jobs:
         working-directory: src
         run: go test ./...
 
-  test:
+  terratest:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
