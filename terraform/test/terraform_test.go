@@ -32,6 +32,11 @@ func TestTerraform(t *testing.T) {
 	dbName := "mysql"
 	region := terraform.Output(t, terraformOptions, "region")
 	functionName := terraform.Output(t, terraformOptions, "function_name")
+
+	invokeLambda(region, functionName)
+	log.Infof("waiting 15 seconds for IAM auth to be enabled")
+	time.Sleep(time.Second * 15)
+
 	testAuroraEndpoint := terraform.Output(t, terraformOptions, "test_aurora_endpoint") + ":3306"
 	testAuroraMasterUsername := terraform.Output(t, terraformOptions, "test_aurora_master_username")
 	testAuroraMasterPassword := fetchSensitiveOutput(t, terraformOptions, "test_aurora_master_password")
@@ -44,10 +49,6 @@ func TestTerraform(t *testing.T) {
 	// Drop the IAM users to reset the test for the next run
 	defer dropUsers(testAuroraEndpoint, testAuroraMasterUsername, testAuroraMasterPassword, dbName, []string{dbIamReadUsername, dbIamAdminUsername})
 	defer dropUsers(testMysqlEndpoint, testMysqlMasterUsername, testMysqlMasterPassword, dbName, []string{dbIamReadUsername, dbIamAdminUsername})
-
-	invokeLambda(region, functionName)
-	log.Infof("waiting 30 seconds for IAM auth to be enabled")
-	time.Sleep(time.Second * 30)
 
 	checkDatabaseConnection(testAuroraEndpoint, region, dbIamReadUsername, dbName)
 	checkDatabaseConnection(testAuroraEndpoint, region, dbIamAdminUsername, dbName)
