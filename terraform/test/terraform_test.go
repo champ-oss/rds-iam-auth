@@ -14,6 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"os"
 	"testing"
+	"time"
 )
 
 func TestTerraform(t *testing.T) {
@@ -45,6 +46,8 @@ func TestTerraform(t *testing.T) {
 	defer dropUsers(testMysqlEndpoint, testMysqlMasterUsername, testMysqlMasterPassword, dbName, []string{dbIamReadUsername, dbIamAdminUsername})
 
 	invokeLambda(region, functionName)
+	log.Infof("waiting 30 seconds for IAM auth to be enabled")
+	time.Sleep(time.Second * 30)
 
 	checkDatabaseConnection(testAuroraEndpoint, region, dbIamReadUsername, dbName)
 	checkDatabaseConnection(testAuroraEndpoint, region, dbIamAdminUsername, dbName)
@@ -130,6 +133,7 @@ func dropUsers(dbEndpoint, loginUser, loginPassword, dbName string, dropUsers []
 }
 
 // fetchSensitiveOutput gets an output from Terrform without logging the value
+// https://github.com/gruntwork-io/terratest/issues/476
 func fetchSensitiveOutput(t *testing.T, options *terraform.Options, name string) string {
 	defer func() {
 		options.Logger = nil

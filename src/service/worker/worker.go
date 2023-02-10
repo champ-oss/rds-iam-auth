@@ -101,20 +101,37 @@ func (s *Service) getDBInstanceInfo(rdsIdentifier string) (common.MySQLConnectio
 // findPassword attempts to locate the RDS password in SSM using the configured search patterns
 func (s *Service) findPassword(rdsIdentifier string) (string, error) {
 	log.Infof("attempting to find password in SSM for RDS database: %s", rdsIdentifier)
+
+	searchResults, _ := s.ssmClient.SearchByTag("identifier", rdsIdentifier)
+	if passwordValue := s.getValueFromSsmSearch(searchResults); passwordValue != "" {
+		return passwordValue, nil
+	}
+
+	searchResults, _ = s.ssmClient.SearchByTag("cluster_identifier", rdsIdentifier)
+	if passwordValue := s.getValueFromSsmSearch(searchResults); passwordValue != "" {
+		return passwordValue, nil
+	}
+
 	for _, pattern := range s.config.SsmSearchPatterns {
 		// Example of search pattern: "/mysql/%s/password"
-		searchResults, _ := s.ssmClient.Search(fmt.Sprintf(pattern, rdsIdentifier))
-
-		if len(searchResults) == 1 {
-			log.Debugf("ssm parameter found matching pattern: %s", fmt.Sprintf(pattern, rdsIdentifier))
-			passwordValue, _ := s.ssmClient.GetValue(searchResults[0])
-			if passwordValue != "" {
-				log.Info("password found in ssm")
-				return passwordValue, nil
-			}
+		searchResults, _ = s.ssmClient.SearchByName(fmt.Sprintf(pattern, rdsIdentifier))
+		if passwordValue := s.getValueFromSsmSearch(searchResults); passwordValue != "" {
+			return passwordValue, nil
 		}
 	}
 	return "", fmt.Errorf("unable to find password in SSM")
+}
+
+// getValueFromSsmSearch check the SSM search results and attempt to get the password value
+func (s *Service) getValueFromSsmSearch(searchResults []string) string {
+	if len(searchResults) == 1 {
+		passwordValue, _ := s.ssmClient.GetValue(searchResults[0])
+		if passwordValue != "" {
+			log.Info("password found in ssm")
+			return passwordValue
+		}
+	}
+	return ""
 }
 
 // createMysqlIamUsers executes the SQL queries to set up read-only and admin users for IAM authentication
