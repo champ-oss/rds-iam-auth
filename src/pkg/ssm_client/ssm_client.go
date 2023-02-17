@@ -11,7 +11,8 @@ import (
 
 type SsmClientInterface interface {
 	GetValue(name string) (string, error)
-	Search(name string) ([]string, error)
+	SearchByName(name string) ([]string, error)
+	SearchByTag(tagName, tagValue string) ([]string, error)
 }
 
 type SsmClient struct {
@@ -26,8 +27,8 @@ func NewSqsClient(config *cfg.Config) *SsmClient {
 	}
 }
 
-// Search searches SSM for a parameter containing the provided name
-func (s *SsmClient) Search(name string) ([]string, error) {
+// SearchByName searches SSM for a parameter containing the provided name
+func (s *SsmClient) SearchByName(name string) ([]string, error) {
 	log.Debugf("searching ssm for %s", name)
 	output, err := s.ssmClient.DescribeParameters(context.TODO(), &ssm.DescribeParametersInput{
 		ParameterFilters: []types.ParameterStringFilter{
@@ -42,6 +43,29 @@ func (s *SsmClient) Search(name string) ([]string, error) {
 		return nil, err
 	}
 	var results []string
+	for _, param := range output.Parameters {
+		results = append(results, *param.Name)
+	}
+	return results, nil
+}
+
+// SearchByTag searches SSM for a parameter matching the provided tag key and value
+func (s *SsmClient) SearchByTag(tagName, tagValue string) ([]string, error) {
+	log.Debugf("searching ssm for tag %s=%s", tagName, tagValue)
+	output, err := s.ssmClient.DescribeParameters(context.TODO(), &ssm.DescribeParametersInput{
+		ParameterFilters: []types.ParameterStringFilter{
+			{
+				Key:    aws.String("tag:" + tagName),
+				Option: aws.String("Equals"),
+				Values: []string{tagValue},
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	var results []string
+	log.Debugf("ssm search returned %d results", len(output.Parameters))
 	for _, param := range output.Parameters {
 		results = append(results, *param.Name)
 	}
