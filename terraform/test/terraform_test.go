@@ -14,6 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"os"
 	"testing"
+	"time"
 )
 
 func TestTerraform(t *testing.T) {
@@ -31,6 +32,11 @@ func TestTerraform(t *testing.T) {
 	dbName := "mysql"
 	region := terraform.Output(t, terraformOptions, "region")
 	functionName := terraform.Output(t, terraformOptions, "function_name")
+
+	invokeLambda(region, functionName)
+	log.Infof("waiting 15 seconds for IAM auth to be enabled")
+	time.Sleep(time.Second * 15)
+
 	testAuroraEndpoint := terraform.Output(t, terraformOptions, "test_aurora_endpoint") + ":3306"
 	testAuroraMasterUsername := terraform.Output(t, terraformOptions, "test_aurora_master_username")
 	testAuroraMasterPassword := fetchSensitiveOutput(t, terraformOptions, "test_aurora_master_password")
@@ -43,8 +49,6 @@ func TestTerraform(t *testing.T) {
 	// Drop the IAM users to reset the test for the next run
 	defer dropUsers(testAuroraEndpoint, testAuroraMasterUsername, testAuroraMasterPassword, dbName, []string{dbIamReadUsername, dbIamAdminUsername})
 	defer dropUsers(testMysqlEndpoint, testMysqlMasterUsername, testMysqlMasterPassword, dbName, []string{dbIamReadUsername, dbIamAdminUsername})
-
-	invokeLambda(region, functionName)
 
 	checkDatabaseConnection(testAuroraEndpoint, region, dbIamReadUsername, dbName)
 	checkDatabaseConnection(testAuroraEndpoint, region, dbIamAdminUsername, dbName)
@@ -130,6 +134,7 @@ func dropUsers(dbEndpoint, loginUser, loginPassword, dbName string, dropUsers []
 }
 
 // fetchSensitiveOutput gets an output from Terrform without logging the value
+// https://github.com/gruntwork-io/terratest/issues/476
 func fetchSensitiveOutput(t *testing.T, options *terraform.Options, name string) string {
 	defer func() {
 		options.Logger = nil

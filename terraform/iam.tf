@@ -6,7 +6,10 @@ data "aws_iam_policy_document" "this" {
       "sqs:GetQueueAttributes",
       "logs:CreateLogStream",
       "logs:PutLogEvents",
-      "rds:Describe*"
+      "rds:Describe*",
+      "tag:Get*",
+      "ssm:Get*",
+      "ssm:Describe*"
     ]
     resources = ["*"]
   }
