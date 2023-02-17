@@ -102,19 +102,28 @@ func (s *Service) getDBInstanceInfo(rdsIdentifier string) (common.MySQLConnectio
 func (s *Service) findPassword(rdsIdentifier string) (string, error) {
 	log.Infof("attempting to find password in SSM for RDS database: %s", rdsIdentifier)
 
-	searchResults, _ := s.ssmClient.SearchByTag("identifier", rdsIdentifier)
+	searchResults, err := s.ssmClient.SearchByTag("cluster_identifier", rdsIdentifier)
+	if err != nil {
+		log.Error(err)
+	}
 	if passwordValue := s.getValueFromSsmSearch(searchResults); passwordValue != "" {
 		return passwordValue, nil
 	}
 
-	searchResults, _ = s.ssmClient.SearchByTag("cluster_identifier", rdsIdentifier)
+	searchResults, err = s.ssmClient.SearchByTag("identifier", rdsIdentifier)
+	if err != nil {
+		log.Error(err)
+	}
 	if passwordValue := s.getValueFromSsmSearch(searchResults); passwordValue != "" {
 		return passwordValue, nil
 	}
 
 	for _, pattern := range s.config.SsmSearchPatterns {
 		// Example of search pattern: "/mysql/%s/password"
-		searchResults, _ = s.ssmClient.SearchByName(fmt.Sprintf(pattern, rdsIdentifier))
+		searchResults, err = s.ssmClient.SearchByName(fmt.Sprintf(pattern, rdsIdentifier))
+		if err != nil {
+			log.Error(err)
+		}
 		if passwordValue := s.getValueFromSsmSearch(searchResults); passwordValue != "" {
 			return passwordValue, nil
 		}

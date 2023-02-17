@@ -65,6 +65,7 @@ func (s *SsmClient) SearchByTag(tagName, tagValue string) ([]string, error) {
 		return nil, err
 	}
 	var results []string
+	log.Debugf("ssm search returned %d results", len(output.Parameters))
 	for _, param := range output.Parameters {
 		results = append(results, *param.Name)
 	}
