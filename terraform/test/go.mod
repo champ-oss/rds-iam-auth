@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.2.6
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.29.2
 	github.com/go-sql-driver/mysql v1.7.0
-	github.com/gruntwork-io/terratest v0.41.10
+	github.com/gruntwork-io/terratest v0.41.11
 	github.com/sirupsen/logrus v1.9.0
 )
 
