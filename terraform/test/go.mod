@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/aws/aws-sdk-go-v2 v1.17.5
 	github.com/aws/aws-sdk-go-v2/config v1.18.15
-	github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.2.6
+	github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.2.7
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.30.0
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/gruntwork-io/terratest v0.41.12
