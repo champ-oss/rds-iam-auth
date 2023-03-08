@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.2.7
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.30.0
 	github.com/go-sql-driver/mysql v1.7.0
-	github.com/gruntwork-io/terratest v0.41.12
+	github.com/gruntwork-io/terratest v0.41.15
 	github.com/sirupsen/logrus v1.9.0
 )
 
@@ -60,11 +60,11 @@ require (
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/zclconf/go-cty v1.9.1 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
-	golang.org/x/net v0.1.0 // indirect
+	golang.org/x/crypto v0.1.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/oauth2 v0.1.0 // indirect
-	golang.org/x/sys v0.1.0 // indirect
-	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.103.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
