@@ -198,7 +198,6 @@ github.com/apparentlymart/go-textseg/v13 v13.0.0 h1:Y+KvPE1NYz0xl601PVImeQfFyEy6
 github.com/apparentlymart/go-textseg/v13 v13.0.0/go.mod h1:ZK2fH7c4NqDTLtiYLvIkEghdlcqw7yxLeM89kiTRPUo=
 github.com/aws/aws-sdk-go v1.44.122 h1:p6mw01WBaNpbdP2xrisz5tIkcNwzj/HysobNoaAHjgo=
 github.com/aws/aws-sdk-go v1.44.122/go.mod h1:y4AeaBuwd2Lk+GepC1E9v0qOiTws0MIWAX4oIKwKHZo=
-github.com/aws/aws-sdk-go-v2 v1.17.5/go.mod h1:uzbQtefpm44goOPmdKyAlXSNcwlRgF3ePWVW6EtJvvw=
 github.com/aws/aws-sdk-go-v2 v1.17.6 h1:Y773UK7OBqhzi5VDXMi1zVGsoj+CVHs2eaC2bDsLwi0=
 github.com/aws/aws-sdk-go-v2 v1.17.6/go.mod h1:uzbQtefpm44goOPmdKyAlXSNcwlRgF3ePWVW6EtJvvw=
 github.com/aws/aws-sdk-go-v2/config v1.18.16 h1:4r7gsCu8Ekwl5iJGE/GmspA2UifqySCCkyyyPFeWs3w=
@@ -207,8 +206,8 @@ github.com/aws/aws-sdk-go-v2/credentials v1.13.16 h1:GgToSxaENX/1zXIGNFfiVk4hxry
 github.com/aws/aws-sdk-go-v2/credentials v1.13.16/go.mod h1:KP7aFJhfwPFgx9aoVYL2nYHjya5WBD98CWaadpgmnpY=
 github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.24 h1:5qyqXASrX2zy5cTnoHHa4N2c3Lc94GH7gjnBP3GwKdU=
 github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.24/go.mod h1:neYVaeKr5eT7BzwULuG2YbLhzWZ22lpjKdCybR7AXrQ=
-github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.2.7 h1:xTuoSBz6RDIzDb8kqveEdpYUmgksxYNFeNKSYUATM4s=
-github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.2.7/go.mod h1:x9SeCjHqRHARRCh05Krdd3Ywmqf6cd9BtHAPN/2VYo0=
+github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.2.8 h1:IO78FqAz/RBeH1cBdny52maz2JoMPR+nVbvTc22Ua8g=
+github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.2.8/go.mod h1:toLaUMs4oLBPcZkWjqR8Fxp+yCbSsmotQUbrgNSB28g=
 github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.30 h1:y+8n9AGDjikyXoMBTRaHHHSaFEB8267ykmvyPodJfys=
 github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.30/go.mod h1:LUBAO3zNXQjoONBKn/kR1y0Q4cj/D02Ts0uHYjcCQLM=
 github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.24 h1:r+Kv+SEJquhAZXaJ7G4u44cIwXV3f8K+N482NNAzJZA=
