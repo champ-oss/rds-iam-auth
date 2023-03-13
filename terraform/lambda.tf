@@ -27,3 +27,10 @@ resource "aws_lambda_event_source_mapping" "this" {
   enabled          = true
   batch_size       = 1
 }
+
+resource "aws_lambda_permission" "this" {
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = module.lambda.function_name
+  principal     = "events.amazonaws.com"
+}

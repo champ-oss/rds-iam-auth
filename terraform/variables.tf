@@ -10,6 +10,12 @@ variable "db_iam_admin_username" {
   default     = "db_iam_admin"
 }
 
+variable "event_triggers_enabled" {
+  description = "Trigger based on RDS events"
+  type        = bool
+  default     = true
+}
+
 variable "git" {
   description = "Name of the Git repo"
   type        = string
