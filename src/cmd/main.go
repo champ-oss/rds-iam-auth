@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-lambda-go/lambda"
 	cfg "github.com/champ-oss/rds-iam-auth/config"
@@ -33,7 +34,7 @@ func init() {
 	workerService = worker.NewService(config, rdsClient, ssmClient)
 }
 
-func handler(ctx context.Context, event Event) error {
+func handler(ctx context.Context, event json.RawMessage) error {
 
 	fmt.Println(event)
 
@@ -54,7 +55,7 @@ func handler(ctx context.Context, event Event) error {
 func main() {
 	if os.Getenv("AWS_LAMBDA_RUNTIME_API") == "" {
 		// Support running the code locally
-		if err := handler(context.TODO(), Event{}); err != nil {
+		if err := handler(context.TODO(), nil); err != nil {
 			panic(err)
 		}
 	} else {
