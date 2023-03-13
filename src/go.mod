@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-lambda-go v1.38.0
 	github.com/aws/aws-sdk-go-v2 v1.17.6
 	github.com/aws/aws-sdk-go-v2/config v1.18.16
-	github.com/aws/aws-sdk-go-v2/service/rds v1.40.5
+	github.com/aws/aws-sdk-go-v2/service/rds v1.40.6
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.20.4
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.35.5
 	github.com/go-sql-driver/mysql v1.7.0
