@@ -27,6 +27,7 @@ func TestTerraform(t *testing.T) {
 		},
 		Vars: map[string]interface{}{},
 	}
+	defer terraform.Destroy(t, terraformOptions)
 	terraform.InitAndApplyAndIdempotent(t, terraformOptions)
 
 	dbName := "mysql"

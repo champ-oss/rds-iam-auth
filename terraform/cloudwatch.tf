@@ -1,5 +1,5 @@
 resource "aws_cloudwatch_event_rule" "this" {
-  name_prefix = "${var.git}-rds-iam-auth-"
+  name_prefix = "${var.git}-rds-iam-auth-events-"
   is_enabled  = var.event_triggers_enabled
   event_pattern = jsonencode({
     "source" : [
