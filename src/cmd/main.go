@@ -36,7 +36,7 @@ func init() {
 
 func handler(ctx context.Context, event json.RawMessage) error {
 
-	fmt.Println(event)
+	fmt.Println(string(event))
 
 	//if len(sqsEvent.Records) < 1 {
 	//	return schedulerService.Run()
