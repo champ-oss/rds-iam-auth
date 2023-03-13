@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	cfg "github.com/champ-oss/rds-iam-auth/config"
 	"github.com/champ-oss/rds-iam-auth/pkg/rds_client"
@@ -11,7 +10,6 @@ import (
 	"github.com/champ-oss/rds-iam-auth/pkg/ssm_client"
 	"github.com/champ-oss/rds-iam-auth/service/scheduler"
 	"github.com/champ-oss/rds-iam-auth/service/worker"
-	log "github.com/sirupsen/logrus"
 	"os"
 )
 
@@ -28,20 +26,20 @@ func init() {
 	workerService = worker.NewService(config, rdsClient, ssmClient)
 }
 
-func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
+func handler(ctx context.Context, event string) error {
 
-	fmt.Println(sqsEvent)
+	fmt.Println(event)
 
 	//if len(sqsEvent.Records) < 1 {
 	//	return schedulerService.Run()
 	//}
 
-	for _, message := range sqsEvent.Records {
-		log.Warning("triggered from sqs message")
-		if err := workerService.Run(message, nil); err != nil {
-			return err
-		}
-	}
+	//for _, message := range sqsEvent.Records {
+	//	log.Warning("triggered from sqs message")
+	//	if err := workerService.Run(message, nil); err != nil {
+	//		return err
+	//	}
+	//}
 
 	return nil
 }
@@ -49,16 +47,7 @@ func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
 func main() {
 	if os.Getenv("AWS_LAMBDA_RUNTIME_API") == "" {
 		// Support running the code locally
-		if err := handler(context.TODO(), events.SQSEvent{
-			Records: []events.SQSMessage{
-				{
-					Body: "cluster|rds-iam-auth-20230208151203633200000014",
-				},
-				{
-					Body: "instance|rds-iam-auth",
-				},
-			},
-		}); err != nil {
+		if err := handler(context.TODO(), "test"); err != nil {
 			panic(err)
 		}
 	} else {
