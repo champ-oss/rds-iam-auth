@@ -17,6 +17,13 @@ var config *cfg.Config
 var schedulerService *scheduler.Service
 var workerService *worker.Service
 
+type Event struct {
+	Records   string
+	Detail    string
+	Resources string
+	Region    string
+}
+
 func init() {
 	config = cfg.LoadConfig()
 	rdsClient := rds_client.NewRdsClient(config)
@@ -26,7 +33,7 @@ func init() {
 	workerService = worker.NewService(config, rdsClient, ssmClient)
 }
 
-func handler(ctx context.Context, event string) error {
+func handler(ctx context.Context, event Event) error {
 
 	fmt.Println(event)
 
@@ -47,7 +54,7 @@ func handler(ctx context.Context, event string) error {
 func main() {
 	if os.Getenv("AWS_LAMBDA_RUNTIME_API") == "" {
 		// Support running the code locally
-		if err := handler(context.TODO(), "test"); err != nil {
+		if err := handler(context.TODO(), Event{}); err != nil {
 			panic(err)
 		}
 	} else {
