@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	cfg "github.com/champ-oss/rds-iam-auth/config"
@@ -29,9 +30,11 @@ func init() {
 
 func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
 
-	if len(sqsEvent.Records) < 1 {
-		return schedulerService.Run()
-	}
+	fmt.Println(sqsEvent)
+
+	//if len(sqsEvent.Records) < 1 {
+	//	return schedulerService.Run()
+	//}
 
 	for _, message := range sqsEvent.Records {
 		log.Warning("triggered from sqs message")
