@@ -18,9 +18,9 @@ var schedulerService *scheduler.Service
 var workerService *worker.Service
 
 type Event struct {
-	Records   string
+	Records   []string
 	Detail    string
-	Resources string
+	Resources []string
 	Region    string
 }
 
