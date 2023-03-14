@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	cfg "github.com/champ-oss/rds-iam-auth/config"
+	"github.com/champ-oss/rds-iam-auth/pkg/common"
 	"github.com/champ-oss/rds-iam-auth/pkg/rds_client"
 	"github.com/champ-oss/rds-iam-auth/pkg/sqs_client"
 	"github.com/champ-oss/rds-iam-auth/pkg/ssm_client"
@@ -30,33 +30,26 @@ func init() {
 }
 
 func handler(ctx context.Context, event json.RawMessage) error {
+	log.Debugf("event: %s", event)
 
-	j, _ := json.Marshal(&event)
-	fmt.Println(string(j))
+	if common.IsScheduledEvent(event) {
+		return schedulerService.Run()
 
-	cloudwatchEvent := events.CloudWatchEvent{}
-	log.Info("attempting to parse cloudwatch event")
-	_ = json.Unmarshal(event, &cloudwatchEvent)
-	if len(cloudwatchEvent.Resources) > 0 {
-		log.Info("detected EventBridge event")
-	}
+	} else if isEventBridgeRdsEvent, cloudwatchEvent := common.IsEventBridgeRdsEvent(event); isEventBridgeRdsEvent {
+		log.Debug(cloudwatchEvent)
+		return nil
 
-	//if len(sqsEvent.Records) < 1 {
-	//	return schedulerService.Run()
-	//}
-
-	log.Info("attempting to parse sqs event")
-	sqsEvent := events.SQSEvent{}
-	_ = json.Unmarshal(event, &sqsEvent)
-
-	for _, message := range sqsEvent.Records {
-		log.Warning("triggered from sqs message")
-		if err := workerService.Run(message, nil); err != nil {
-			return err
+	} else if isSqsEvent, sqsEvent := common.IsSqsEvent(event); isSqsEvent {
+		for _, message := range sqsEvent.Records {
+			if err := workerService.Run(message, nil); err != nil {
+				return err
+			}
 		}
-	}
+		return nil
 
-	return nil
+	} else {
+		return fmt.Errorf("unable to recognize lambda event")
+	}
 }
 
 func main() {

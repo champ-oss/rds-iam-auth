@@ -1,6 +1,7 @@
 package common
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/service/rds/types"
@@ -40,4 +41,37 @@ func GetSecurityGroupIds(vpcSecurityGroups []types.VpcSecurityGroupMembership) [
 		securityGroups = append(securityGroups, *sg.VpcSecurityGroupId)
 	}
 	return securityGroups
+}
+
+// IsSqsEvent parses a lambda event to detect if it came from an SQS message
+func IsSqsEvent(event []byte) (bool, events.SQSEvent) {
+	sqsEvent := events.SQSEvent{}
+	_ = json.Unmarshal(event, &sqsEvent)
+	if len(sqsEvent.Records) > 0 {
+		log.Info("detected SQS event")
+		return true, sqsEvent
+	}
+	return false, sqsEvent
+}
+
+// IsEventBridgeRdsEvent parses a lambda event to detect if it came from an EventBridge RDS event
+func IsEventBridgeRdsEvent(event []byte) (bool, events.CloudWatchEvent) {
+	cloudwatchEvent := events.CloudWatchEvent{}
+	_ = json.Unmarshal(event, &cloudwatchEvent)
+	if cloudwatchEvent.Source == "aws.rds" {
+		log.Info("detected EventBridge RDS event")
+		return true, cloudwatchEvent
+	}
+	return false, cloudwatchEvent
+}
+
+// IsScheduledEvent parses a lambda event to detect if it came from a CloudWatch scheduled event
+func IsScheduledEvent(event []byte) bool {
+	cloudwatchEvent := events.CloudWatchEvent{}
+	_ = json.Unmarshal(event, &cloudwatchEvent)
+	if cloudwatchEvent.Source == "aws.events" {
+		log.Info("detected scheduled event")
+		return true
+	}
+	return false
 }
