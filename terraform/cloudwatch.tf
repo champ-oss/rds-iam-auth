@@ -9,7 +9,15 @@ resource "aws_cloudwatch_event_rule" "this" {
       "RDS DB Snapshot Event",
       "RDS DB Instance Event",
       "RDS DB Cluster Event"
-    ]
+    ],
+    "detail" : {
+      "EventCategories" : [
+        "configuration change",
+        "creation",
+        "maintenance",
+        "restoration"
+      ]
+    }
   })
 }
 
