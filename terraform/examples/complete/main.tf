@@ -51,7 +51,7 @@ resource "aws_security_group" "test" {
 }
 
 module "aurora" {
-  source                    = "github.com/champ-oss/terraform-aws-aurora.git?ref=v1.0.33-8c0c9f6"
+  source                    = "github.com/champ-oss/terraform-aws-aurora.git?ref=v1.0.35-db258d6"
   cluster_identifier_prefix = local.git
   git                       = local.git
   protect                   = false
