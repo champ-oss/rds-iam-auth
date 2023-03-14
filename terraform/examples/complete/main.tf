@@ -82,8 +82,10 @@ module "mysql" {
 }
 
 module "this" {
-  source              = "../../"
-  vpc_id              = data.aws_vpcs.this.ids[0]
-  private_subnet_ids  = data.aws_subnets.private.ids
-  schedule_expression = "cron(0 * * * ? *)"
+  source                = "../../"
+  vpc_id                = data.aws_vpcs.this.ids[0]
+  private_subnet_ids    = data.aws_subnets.private.ids
+  schedule_expression   = "cron(0 * * * ? *)"
+  retry_delay_seconds   = 30
+  retry_timeout_minutes = 5
 }
