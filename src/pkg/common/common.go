@@ -10,6 +10,7 @@ import (
 )
 
 const SqsMessageBodySeparator = "|"
+const EventResourceSeparator = ":"
 const RdsTypeClusterKey = "cluster"
 const RdsTypeInstanceKey = "instance"
 
@@ -23,7 +24,7 @@ type MySQLConnectionInfo struct {
 }
 
 // ParseSqsMessage parses the RDS type and RDS identifier from the incoming SQS message body
-func ParseSqsMessage(message events.SQSMessage) (rdsType string, rdsIdentifier string, err error) {
+func ParseSqsMessage(message *events.SQSMessage) (rdsType string, rdsIdentifier string, err error) {
 	log.Debugf("sqs message body: %s", message.Body)
 	messageParts := strings.Split(message.Body, SqsMessageBodySeparator)
 	if len(messageParts) != 2 {
@@ -31,6 +32,21 @@ func ParseSqsMessage(message events.SQSMessage) (rdsType string, rdsIdentifier s
 	}
 	rdsType = messageParts[0]
 	rdsIdentifier = messageParts[1]
+	return rdsType, rdsIdentifier, nil
+}
+
+func ParseEventBridgeRdsEvent(event *events.CloudWatchEvent) (rdsType string, rdsIdentifier string, err error) {
+	resourceParts := strings.Split(event.Resources[0], EventResourceSeparator)
+	if len(resourceParts) != 7 {
+		return "", "", fmt.Errorf("unable to parse event resources: %s", event.Resources)
+
+	}
+	rdsIdentifier = resourceParts[len(resourceParts)-1]
+	if event.DetailType == "RDS DB Cluster Event" {
+		rdsType = RdsTypeClusterKey
+	} else if event.DetailType == "RDS DB Instance Event" {
+		rdsType = RdsTypeInstanceKey
+	}
 	return rdsType, rdsIdentifier, nil
 }
 

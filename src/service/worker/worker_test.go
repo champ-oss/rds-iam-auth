@@ -65,7 +65,7 @@ func Test_Run_with_cluster_no_error(t *testing.T) {
 	mysqlClient.EXPECT().CloseDb()
 
 	message := events.SQSMessage{Body: "cluster|cluster1"}
-	assert.NoError(t, svc.Run(message, mysqlClient))
+	assert.NoError(t, svc.Run(&message, nil, mysqlClient))
 }
 
 // Test_Run_with_error_finding_cluster tests being unable to find the RDS cluster
@@ -74,7 +74,7 @@ func Test_Run_with_error_finding_cluster(t *testing.T) {
 	rdsClient.EXPECT().GetDBCluster("cluster1").Return(nil, fmt.Errorf("unable to find"))
 
 	message := events.SQSMessage{Body: "cluster|cluster1"}
-	assert.ErrorContains(t, svc.Run(message, nil), "unable to find")
+	assert.ErrorContains(t, svc.Run(&message, nil, nil), "unable to find")
 }
 
 // Test_Run_with_instance_no_error tests running successfully with an RDS instance value
@@ -103,7 +103,7 @@ func Test_Run_with_instance_no_error(t *testing.T) {
 	mysqlClient.EXPECT().CloseDb()
 
 	message := events.SQSMessage{Body: "instance|instance1"}
-	assert.NoError(t, svc.Run(message, mysqlClient))
+	assert.NoError(t, svc.Run(&message, nil, mysqlClient))
 }
 
 // Test_Run_with_error_finding_instance tests being unable to find the RDS instance
@@ -112,7 +112,7 @@ func Test_Run_with_error_finding_instance(t *testing.T) {
 	rdsClient.EXPECT().GetDBInstance("instance1").Return(nil, fmt.Errorf("unable to find"))
 
 	message := events.SQSMessage{Body: "instance|instance1"}
-	assert.ErrorContains(t, svc.Run(message, nil), "unable to find")
+	assert.ErrorContains(t, svc.Run(&message, nil, nil), "unable to find")
 }
 
 // Test_Run_parsing_error tests passing a message body that cannot be parsed
@@ -121,7 +121,7 @@ func Test_Run_parsing_error(t *testing.T) {
 
 	// test invalid SQS message body "foo"
 	message := events.SQSMessage{Body: "foo"}
-	assert.ErrorContains(t, svc.Run(message, nil), "unable to parse sqs message: foo")
+	assert.ErrorContains(t, svc.Run(&message, nil, nil), "unable to parse sqs message: foo")
 }
 
 // Test_Run_unrecognized_type_error tests passing an unsupported RDS type
@@ -130,7 +130,7 @@ func Test_Run_unrecognized_type_error(t *testing.T) {
 
 	// test invalid RDS type "foo"
 	message := events.SQSMessage{Body: "foo|cluster1"}
-	assert.ErrorContains(t, svc.Run(message, nil), "unrecognized RDS type: foo")
+	assert.ErrorContains(t, svc.Run(&message, nil, nil), "unrecognized RDS type: foo")
 }
 
 // Test_Run_error_finding_password tests being unable to find the password in SSM
@@ -149,7 +149,7 @@ func Test_Run_error_finding_password(t *testing.T) {
 	ssmClient.EXPECT().SearchByName("cluster1-password").Return([]string{}, nil)
 
 	message := events.SQSMessage{Body: "cluster|cluster1"}
-	assert.ErrorContains(t, svc.Run(message, nil), "unable to find")
+	assert.ErrorContains(t, svc.Run(&message, nil, nil), "unable to find")
 }
 
 // Test_Run_with_error_connecting_mysql tests an error connecting to the mysql server
@@ -173,7 +173,7 @@ func Test_Run_with_error_connecting_mysql(t *testing.T) {
 	ssmClient.EXPECT().GetValue("cluster1-password").Return("password1", nil)
 
 	message := events.SQSMessage{Body: "cluster|cluster1"}
-	assert.Errorf(t, svc.Run(message, nil), "some error")
+	assert.Errorf(t, svc.Run(&message, nil, nil), "some error")
 }
 
 // Test_Run_with_error_running_mysql_query tests with an error executing a mysql query
@@ -200,5 +200,5 @@ func Test_Run_with_error_running_mysql_query(t *testing.T) {
 	mysqlClient.EXPECT().CloseDb()
 
 	message := events.SQSMessage{Body: "cluster|cluster1"}
-	assert.Errorf(t, svc.Run(message, mysqlClient), "some error")
+	assert.Errorf(t, svc.Run(&message, nil, mysqlClient), "some error")
 }

@@ -26,11 +26,21 @@ func NewService(config *cfg.Config, rdsClient rds_client.RdsClientInterface, ssm
 	}
 }
 
-// Run is the entrypoint for this service
-func (s *Service) Run(message events.SQSMessage, mysqlClient mysql_client.MysqlClientInterface) error {
-	rdsType, rdsIdentifier, err := common.ParseSqsMessage(message)
-	if err != nil {
-		return err
+func (s *Service) Run(message *events.SQSMessage, event *events.CloudWatchEvent, mysqlClient mysql_client.MysqlClientInterface) error {
+	var rdsType, rdsIdentifier string
+	var err error
+	if message != nil {
+		rdsType, rdsIdentifier, err = common.ParseSqsMessage(message)
+		if err != nil {
+			return err
+		}
+	} else if event != nil {
+		rdsType, rdsIdentifier, err = common.ParseEventBridgeRdsEvent(event)
+		if err != nil {
+			return err
+		}
+	} else {
+		return fmt.Errorf("message or event must be specified")
 	}
 
 	mySQLConnectionInfo, err := s.getConnectionInfo(rdsType, rdsIdentifier)
@@ -45,6 +55,36 @@ func (s *Service) Run(message events.SQSMessage, mysqlClient mysql_client.MysqlC
 
 	return s.createMysqlIamUsers(mysqlClient, mySQLConnectionInfo)
 }
+
+//func (s *Service) RunFromSQS(message events.SQSMessage, mysqlClient mysql_client.MysqlClientInterface) error {
+//	rdsType, rdsIdentifier, err := common.ParseSqsMessage(message)
+//	if err != nil {
+//		return err
+//	}
+//	return s.processRds(rdsType, rdsIdentifier, mysqlClient)
+//}
+//
+//func (s *Service) RunFromEventBridge(event events.CloudWatchEvent, mysqlClient mysql_client.MysqlClientInterface) error {
+//	rdsType, rdsIdentifier, err := common.ParseEventBridgeRdsEvent(event)
+//	if err != nil {
+//		return err
+//	}
+//	return s.processRds(rdsType, rdsIdentifier, mysqlClient)
+//}
+//
+//func (s *Service) processRds(rdsType string, rdsIdentifier string, mysqlClient mysql_client.MysqlClientInterface) error {
+//	mySQLConnectionInfo, err := s.getConnectionInfo(rdsType, rdsIdentifier)
+//	if err != nil {
+//		return err
+//	}
+//
+//	mySQLConnectionInfo.Password, err = s.findPassword(rdsIdentifier)
+//	if err != nil {
+//		return err
+//	}
+//
+//	return s.createMysqlIamUsers(mysqlClient, mySQLConnectionInfo)
+//}
 
 // getConnectionInfo gets connection information and returns common.MySQLConnectionInfo
 func (s *Service) getConnectionInfo(rdsType, rdsIdentifier string) (common.MySQLConnectionInfo, error) {
