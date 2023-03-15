@@ -34,6 +34,12 @@ variable "git" {
   default     = "rds-iam-auth"
 }
 
+variable "max_receive_count" {
+  description = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sqs_queue"
+  type        = number
+  default     = 120
+}
+
 variable "private_subnet_ids" {
   description = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_cluster#subnet_ids"
   type        = list(string)

@@ -30,22 +30,22 @@ resource "aws_cloudwatch_event_target" "this" {
   rule = aws_cloudwatch_event_rule.this.id
 }
 
-resource "aws_cloudwatch_metric_alarm" "this" {
+resource "aws_cloudwatch_metric_alarm" "deadletter" {
   count               = var.enable_alarms ? 1 : 0
-  alarm_name          = "${var.git}-rds-iam-auth-sqs-age"
+  alarm_name          = "${var.git}-rds-iam-auth-sqs-deadletter"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
-  metric_name         = "ApproximateAgeOfOldestMessage"
+  metric_name         = "ApproximateNumberOfMessagesVisible"
   namespace           = "AWS/SQS"
   period              = 300
-  statistic           = "Average"
-  threshold           = 3600 # 1 hour
-  alarm_description   = "${var.git} age of oldest SQS message for RDS IAM auth"
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "${var.git} messages in deadletter SQS for RDS IAM auth"
   alarm_actions       = [aws_sns_topic.this.arn]
   ok_actions          = [aws_sns_topic.this.arn]
   tags                = merge(local.tags, var.tags)
 
   dimensions = {
-    QueueName = aws_sqs_queue.this.name
+    QueueName = aws_sqs_queue.deadletter.name
   }
 }

@@ -63,6 +63,7 @@ module "aurora" {
   tags                      = local.tags
   publicly_accessible       = true
   cidr_blocks               = ["0.0.0.0/0"]
+  cluster_instance_count    = 2
 }
 
 module "mysql" {
@@ -82,10 +83,10 @@ module "mysql" {
 }
 
 module "this" {
-  source                = "../../"
-  vpc_id                = data.aws_vpcs.this.ids[0]
-  private_subnet_ids    = data.aws_subnets.private.ids
-  schedule_expression   = "cron(0 4 * * ? *)"
-  retry_delay_seconds   = 30
-  retry_timeout_minutes = 90
+  source              = "../../"
+  vpc_id              = data.aws_vpcs.this.ids[0]
+  private_subnet_ids  = data.aws_subnets.private.ids
+  schedule_expression = "cron(0 4 * * ? *)"
+  retry_delay_seconds = 30
+  max_receive_count   = 120
 }
