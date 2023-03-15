@@ -33,14 +33,14 @@ func handler(ctx context.Context, event json.RawMessage) error {
 	log.Debugf("event: %s", event)
 
 	if common.IsScheduledEvent(event) {
-		return schedulerService.Run()
+		return schedulerService.Run(nil)
 
 	} else if isEventBridgeRdsEvent, cloudwatchEvent := common.IsEventBridgeRdsEvent(event); isEventBridgeRdsEvent {
-		return workerService.Run(nil, &cloudwatchEvent, nil)
+		return schedulerService.Run(&cloudwatchEvent)
 
 	} else if isSqsEvent, sqsEvent := common.IsSqsEvent(event); isSqsEvent {
 		for _, message := range sqsEvent.Records {
-			if err := workerService.Run(&message, nil, nil); err != nil {
+			if err := workerService.Run(&message, nil); err != nil {
 				return err
 			}
 		}

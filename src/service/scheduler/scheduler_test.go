@@ -30,7 +30,7 @@ func Test_Run_no_error(t *testing.T) {
 	sqsClient.EXPECT().Send("instance|instance2").Return(nil)
 
 	svc := Service{nil, sqsClient, rdsClient}
-	assert.NoError(t, svc.Run())
+	assert.NoError(t, svc.Run(nil))
 }
 
 func Test_Run_with_error(t *testing.T) {
@@ -44,5 +44,5 @@ func Test_Run_with_error(t *testing.T) {
 	sqsClient.EXPECT().Send("cluster|cluster1").Return(fmt.Errorf("some error"))
 
 	svc := Service{nil, sqsClient, rdsClient}
-	assert.Errorf(t, svc.Run(), "some error")
+	assert.Errorf(t, svc.Run(nil), "some error")
 }
