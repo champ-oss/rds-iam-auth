@@ -40,17 +40,9 @@ func TestTerraform(t *testing.T) {
 	time.Sleep(time.Second * 15)
 
 	testAuroraEndpoint := terraform.Output(t, terraformOptions, "test_aurora_endpoint") + ":3306"
-	testAuroraMasterUsername := terraform.Output(t, terraformOptions, "test_aurora_master_username")
-	testAuroraMasterPassword := fetchSensitiveOutput(t, terraformOptions, "test_aurora_master_password")
 	testMysqlEndpoint := terraform.Output(t, terraformOptions, "test_mysql_endpoint") + ":3306"
-	testMysqlMasterUsername := terraform.Output(t, terraformOptions, "test_mysql_master_username")
-	testMysqlMasterPassword := fetchSensitiveOutput(t, terraformOptions, "test_mysql_master_password")
 	dbIamReadUsername := terraform.Output(t, terraformOptions, "db_iam_read_username")
 	dbIamAdminUsername := terraform.Output(t, terraformOptions, "db_iam_admin_username")
-
-	// Drop the IAM users to reset the test for the next run
-	defer dropUsers(testAuroraEndpoint, testAuroraMasterUsername, testAuroraMasterPassword, dbName, []string{dbIamReadUsername, dbIamAdminUsername})
-	defer dropUsers(testMysqlEndpoint, testMysqlMasterUsername, testMysqlMasterPassword, dbName, []string{dbIamReadUsername, dbIamAdminUsername})
 
 	assert.NoError(t, checkDatabaseConnection(testAuroraEndpoint, region, dbIamReadUsername, dbName))
 	assert.NoError(t, checkDatabaseConnection(testAuroraEndpoint, region, dbIamAdminUsername, dbName))
@@ -116,31 +108,7 @@ func checkDatabaseConnection(dbEndpoint, region, dbUser, dbName string) error {
 	return nil
 }
 
-// dropUsers deletes the given usernames from the MySQL server
-func dropUsers(dbEndpoint, loginUser, loginPassword, dbName string, dropUsers []string) {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?tls=skip-verify&allowCleartextPasswords=true", loginUser, loginPassword, dbEndpoint, dbName)
-
-	log.Infof("connecting to MySQL endpoint: %s", dbEndpoint)
-	db, err := sql.Open("mysql", dsn)
-	if err != nil {
-		log.Error(err)
-	}
-	defer db.Close()
-
-	if err := db.Ping(); err != nil {
-		log.Error(err)
-	}
-	log.Info("connected successfully")
-
-	for _, user := range dropUsers {
-		log.Infof("dropping user: %s", user)
-		if _, err := db.Query("DROP USER IF EXISTS " + user); err != nil {
-			log.Error(err)
-		}
-	}
-}
-
-// fetchSensitiveOutput gets an output from Terrform without logging the value
+// fetchSensitiveOutput gets an output from Terraform without logging the value
 // https://github.com/gruntwork-io/terratest/issues/476
 func fetchSensitiveOutput(t *testing.T, options *terraform.Options, name string) string {
 	defer func() {
