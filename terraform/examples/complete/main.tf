@@ -87,5 +87,5 @@ module "this" {
   private_subnet_ids    = data.aws_subnets.private.ids
   schedule_expression   = "cron(0 4 * * ? *)"
   retry_delay_seconds   = 30
-  retry_timeout_minutes = 5
+  retry_timeout_minutes = 90
 }
