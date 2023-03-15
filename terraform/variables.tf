@@ -1,3 +1,9 @@
+variable "alarms_email" {
+  description = "Email address to send alarms"
+  type        = string
+  default     = null
+}
+
 variable "db_iam_read_username" {
   description = "IAM read only username"
   type        = string
@@ -8,6 +14,12 @@ variable "db_iam_admin_username" {
   description = "IAM admin username"
   type        = string
   default     = "db_iam_admin"
+}
+
+variable "enable_alarms" {
+  description = "Enable CloudWatch metric alarms"
+  type        = bool
+  default     = true
 }
 
 variable "event_triggers_enabled" {

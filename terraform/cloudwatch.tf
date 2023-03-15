@@ -29,3 +29,23 @@ resource "aws_cloudwatch_event_target" "this" {
   arn  = module.lambda.arn
   rule = aws_cloudwatch_event_rule.this.id
 }
+
+resource "aws_cloudwatch_metric_alarm" "this" {
+  count               = var.enable_alarms ? 1 : 0
+  alarm_name          = "${var.git}-rds-iam-auth-sqs-age"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "ApproximateAgeOfOldestMessage"
+  namespace           = "AWS/SQS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 3600 # 1 hour
+  alarm_description   = "${var.git} age of oldest SQS message for RDS IAM auth"
+  alarm_actions       = [aws_sns_topic.this.arn]
+  ok_actions          = [aws_sns_topic.this.arn]
+  tags                = merge(local.tags, var.tags)
+
+  dimensions = {
+    QueueName = aws_sqs_queue.this.name
+  }
+}
