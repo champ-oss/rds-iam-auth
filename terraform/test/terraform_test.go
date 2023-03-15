@@ -12,6 +12,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 	"time"
@@ -34,7 +35,7 @@ func TestTerraform(t *testing.T) {
 	region := terraform.Output(t, terraformOptions, "region")
 	functionName := terraform.Output(t, terraformOptions, "function_name")
 
-	invokeLambda(region, functionName)
+	assert.NoError(t, invokeLambda(region, functionName))
 	log.Infof("waiting 15 seconds for IAM auth to be enabled")
 	time.Sleep(time.Second * 15)
 
@@ -51,11 +52,11 @@ func TestTerraform(t *testing.T) {
 	defer dropUsers(testAuroraEndpoint, testAuroraMasterUsername, testAuroraMasterPassword, dbName, []string{dbIamReadUsername, dbIamAdminUsername})
 	defer dropUsers(testMysqlEndpoint, testMysqlMasterUsername, testMysqlMasterPassword, dbName, []string{dbIamReadUsername, dbIamAdminUsername})
 
-	checkDatabaseConnection(testAuroraEndpoint, region, dbIamReadUsername, dbName)
-	checkDatabaseConnection(testAuroraEndpoint, region, dbIamAdminUsername, dbName)
+	assert.NoError(t, checkDatabaseConnection(testAuroraEndpoint, region, dbIamReadUsername, dbName))
+	assert.NoError(t, checkDatabaseConnection(testAuroraEndpoint, region, dbIamAdminUsername, dbName))
 
-	checkDatabaseConnection(testMysqlEndpoint, region, dbIamReadUsername, dbName)
-	checkDatabaseConnection(testMysqlEndpoint, region, dbIamAdminUsername, dbName)
+	assert.NoError(t, checkDatabaseConnection(testMysqlEndpoint, region, dbIamReadUsername, dbName))
+	assert.NoError(t, checkDatabaseConnection(testMysqlEndpoint, region, dbIamAdminUsername, dbName))
 }
 
 func destroy(t *testing.T, options *terraform.Options) {
@@ -79,7 +80,7 @@ func getAWSConfig(region string) aws.Config {
 }
 
 // invokeLambda calls an AWS lambda function and waits for the result
-func invokeLambda(region, functionName string) {
+func invokeLambda(region, functionName string) error {
 	client := lambda.NewFromConfig(getAWSConfig(region))
 	log.Infof("invoking lambda %s", functionName)
 	output, err := client.Invoke(context.TODO(), &lambda.InvokeInput{
@@ -87,18 +88,16 @@ func invokeLambda(region, functionName string) {
 		InvocationType: "RequestResponse",
 		LogType:        "Tail",
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 	log.Info(output.StatusCode)
+	return err
 }
 
 // checkDatabaseConnection logs into a MySQL database using IAM credentials
-func checkDatabaseConnection(dbEndpoint, region, dbUser, dbName string) {
+func checkDatabaseConnection(dbEndpoint, region, dbUser, dbName string) error {
 	log.Infof("getting IAM auth token for RDS endpoint: %s", dbEndpoint)
 	authenticationToken, err := auth.BuildAuthToken(context.TODO(), dbEndpoint, region, dbUser, getAWSConfig(region).Credentials)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?tls=skip-verify&allowCleartextPasswords=true", dbUser, authenticationToken, dbEndpoint, dbName)
@@ -106,15 +105,15 @@ func checkDatabaseConnection(dbEndpoint, region, dbUser, dbName string) {
 	log.Infof("connecting to MySQL endpoint: %s", dbEndpoint)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer db.Close()
 
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
+	if err := db.Ping(); err != nil {
+		return err
 	}
 	log.Info("connected successfully")
+	return nil
 }
 
 // dropUsers deletes the given usernames from the MySQL server
@@ -124,21 +123,19 @@ func dropUsers(dbEndpoint, loginUser, loginPassword, dbName string, dropUsers []
 	log.Infof("connecting to MySQL endpoint: %s", dbEndpoint)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	defer db.Close()
 
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
+	if err := db.Ping(); err != nil {
+		log.Error(err)
 	}
 	log.Info("connected successfully")
 
 	for _, user := range dropUsers {
 		log.Infof("dropping user: %s", user)
-		_, err = db.Query("DROP USER IF EXISTS " + user)
-		if err != nil {
-			log.Fatal(err)
+		if _, err := db.Query("DROP USER IF EXISTS " + user); err != nil {
+			log.Error(err)
 		}
 	}
 }
