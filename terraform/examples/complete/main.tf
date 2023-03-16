@@ -88,5 +88,5 @@ module "this" {
   private_subnet_ids  = data.aws_subnets.private.ids
   schedule_expression = "cron(0 4 * * ? *)"
   retry_delay_seconds = 30
-  max_receive_count   = 120
+  max_receive_count   = 60
 }
