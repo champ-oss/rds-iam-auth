@@ -47,6 +47,8 @@ func ParseEventBridgeRdsEvent(event *events.CloudWatchEvent) (rdsType string, rd
 		rdsType = RdsTypeClusterKey
 	} else if event.DetailType == "RDS DB Instance Event" {
 		rdsType = RdsTypeInstanceKey
+	} else {
+		return "", "", fmt.Errorf("unable to parse event detail type: %s", event.DetailType)
 	}
 	return rdsType, rdsIdentifier, nil
 }
