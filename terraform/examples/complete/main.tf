@@ -63,7 +63,7 @@ module "aurora" {
   tags                      = local.tags
   publicly_accessible       = true
   cidr_blocks               = ["0.0.0.0/0"]
-  cluster_instance_count    = 2
+  cluster_instance_count    = 1
 }
 
 module "mysql" {

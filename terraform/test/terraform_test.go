@@ -9,13 +9,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/rds/auth"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
-	"time"
 )
 
 func TestTerraform(t *testing.T) {
@@ -35,10 +33,6 @@ func TestTerraform(t *testing.T) {
 	region := terraform.Output(t, terraformOptions, "region")
 	functionName := terraform.Output(t, terraformOptions, "function_name")
 
-	assert.NoError(t, invokeLambda(region, functionName))
-	log.Infof("waiting 15 seconds for IAM auth to be enabled")
-	time.Sleep(time.Second * 15)
-
 	testAuroraEndpoint := terraform.Output(t, terraformOptions, "test_aurora_endpoint") + ":3306"
 	testMysqlEndpoint := terraform.Output(t, terraformOptions, "test_mysql_endpoint") + ":3306"
 	dbIamReadUsername := terraform.Output(t, terraformOptions, "db_iam_read_username")
@@ -49,6 +43,11 @@ func TestTerraform(t *testing.T) {
 
 	assert.NoError(t, checkDatabaseConnection(testMysqlEndpoint, region, dbIamReadUsername, dbName))
 	assert.NoError(t, checkDatabaseConnection(testMysqlEndpoint, region, dbIamAdminUsername, dbName))
+
+	log.Info("invoking the lambda to check for errors")
+	output, err := invokeLambda(region, functionName)
+	assert.NoError(t, err)
+	log.Infof(output)
 }
 
 func destroy(t *testing.T, options *terraform.Options) {
@@ -72,7 +71,7 @@ func getAWSConfig(region string) aws.Config {
 }
 
 // invokeLambda calls an AWS lambda function and waits for the result
-func invokeLambda(region, functionName string) error {
+func invokeLambda(region, functionName string) (string, error) {
 	client := lambda.NewFromConfig(getAWSConfig(region))
 	log.Infof("invoking lambda %s", functionName)
 	output, err := client.Invoke(context.TODO(), &lambda.InvokeInput{
@@ -81,7 +80,7 @@ func invokeLambda(region, functionName string) error {
 		LogType:        "Tail",
 	})
 	log.Info(output.StatusCode)
-	return err
+	return *output.LogResult, err
 }
 
 // checkDatabaseConnection logs into a MySQL database using IAM credentials
@@ -106,14 +105,4 @@ func checkDatabaseConnection(dbEndpoint, region, dbUser, dbName string) error {
 	}
 	log.Info("connected successfully")
 	return nil
-}
-
-// fetchSensitiveOutput gets an output from Terraform without logging the value
-// https://github.com/gruntwork-io/terratest/issues/476
-func fetchSensitiveOutput(t *testing.T, options *terraform.Options, name string) string {
-	defer func() {
-		options.Logger = nil
-	}()
-	options.Logger = logger.Discard
-	return terraform.Output(t, options, name)
 }
