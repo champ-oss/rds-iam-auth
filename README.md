@@ -16,7 +16,10 @@ automates the setup process for every database it is able to find within a VPC.
 ## How does it work?
 The application first scans for all RDS clusters and instances in the VPC which the application is connected to. Then it uses multiple methods to try
 to discover the master password as an SSM parameter. If the password is found, the application connects to the database and runs the SQL commands
-necessary to enable IAM authentication.
+necessary to enable IAM authentication. 
+
+This application is also triggered from events relating to RDS clusters and instances. For example, when a new RDS cluster is created this application will
+immediately attempt to enable IAM authentication instead of waiting for the next scheduled run.
 
 
 ## Usage
