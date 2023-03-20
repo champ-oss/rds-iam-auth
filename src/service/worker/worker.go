@@ -38,6 +38,11 @@ func (s *Service) Run(message *events.SQSMessage, mysqlClient mysql_client.Mysql
 		return err
 	}
 
+	if mySQLConnectionInfo.IsClusterInstance {
+		log.Warningf("instance: %s is part of a cluster so we will end processing since clusters are processed separately.", rdsIdentifier)
+		return nil
+	}
+
 	mySQLConnectionInfo.Password, err = s.findPassword(rdsIdentifier)
 	if err != nil {
 		return err
@@ -70,11 +75,12 @@ func (s *Service) getDBClusterInfo(rdsIdentifier string) (common.MySQLConnection
 	}
 
 	mySQLConnectionInfo := common.MySQLConnectionInfo{
-		Endpoint:       *cluster.Endpoint,
-		Port:           *cluster.Port,
-		Username:       *cluster.MasterUsername,
-		Database:       s.config.DefaultDatabase,
-		SecurityGroups: common.GetSecurityGroupIds(cluster.VpcSecurityGroups),
+		Endpoint:          *cluster.Endpoint,
+		Port:              *cluster.Port,
+		Username:          *cluster.MasterUsername,
+		Database:          s.config.DefaultDatabase,
+		SecurityGroups:    common.GetSecurityGroupIds(cluster.VpcSecurityGroups),
+		IsClusterInstance: false,
 	}
 	log.Debugf("%+v", mySQLConnectionInfo)
 	return mySQLConnectionInfo, nil
@@ -88,12 +94,18 @@ func (s *Service) getDBInstanceInfo(rdsIdentifier string) (common.MySQLConnectio
 	}
 
 	mySQLConnectionInfo := common.MySQLConnectionInfo{
-		Endpoint:       *instance.Endpoint.Address,
-		Port:           instance.Endpoint.Port,
-		Username:       *instance.MasterUsername,
-		Database:       s.config.DefaultDatabase,
-		SecurityGroups: common.GetSecurityGroupIds(instance.VpcSecurityGroups),
+		Endpoint:          *instance.Endpoint.Address,
+		Port:              instance.Endpoint.Port,
+		Username:          *instance.MasterUsername,
+		Database:          s.config.DefaultDatabase,
+		SecurityGroups:    common.GetSecurityGroupIds(instance.VpcSecurityGroups),
+		IsClusterInstance: false,
 	}
+
+	if instance.DBClusterIdentifier != nil {
+		mySQLConnectionInfo.IsClusterInstance = true
+	}
+
 	log.Debugf("%+v", mySQLConnectionInfo)
 	return mySQLConnectionInfo, nil
 }
