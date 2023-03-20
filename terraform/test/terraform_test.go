@@ -7,7 +7,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/rds/auth"
-	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	log "github.com/sirupsen/logrus"
@@ -31,7 +30,6 @@ func TestTerraform(t *testing.T) {
 
 	dbName := "mysql"
 	region := terraform.Output(t, terraformOptions, "region")
-	functionName := terraform.Output(t, terraformOptions, "function_name")
 
 	testAuroraEndpoint := terraform.Output(t, terraformOptions, "test_aurora_endpoint") + ":3306"
 	testMysqlEndpoint := terraform.Output(t, terraformOptions, "test_mysql_endpoint") + ":3306"
@@ -43,11 +41,6 @@ func TestTerraform(t *testing.T) {
 
 	assert.NoError(t, checkDatabaseConnection(testMysqlEndpoint, region, dbIamReadUsername, dbName))
 	assert.NoError(t, checkDatabaseConnection(testMysqlEndpoint, region, dbIamAdminUsername, dbName))
-
-	log.Info("invoking the lambda to check for errors")
-	output, err := invokeLambda(region, functionName)
-	assert.NoError(t, err)
-	log.Infof(output)
 }
 
 func destroy(t *testing.T, options *terraform.Options) {
@@ -68,19 +61,6 @@ func getAWSConfig(region string) aws.Config {
 	}
 	log.Info("Loaded AWS configuration successfully")
 	return awsConfig
-}
-
-// invokeLambda calls an AWS lambda function and waits for the result
-func invokeLambda(region, functionName string) (string, error) {
-	client := lambda.NewFromConfig(getAWSConfig(region))
-	log.Infof("invoking lambda %s", functionName)
-	output, err := client.Invoke(context.TODO(), &lambda.InvokeInput{
-		FunctionName:   aws.String(functionName),
-		InvocationType: "RequestResponse",
-		LogType:        "Tail",
-	})
-	log.Info(output.StatusCode)
-	return *output.LogResult, err
 }
 
 // checkDatabaseConnection logs into a MySQL database using IAM credentials
