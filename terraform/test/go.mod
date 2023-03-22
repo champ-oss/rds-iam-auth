@@ -3,9 +3,9 @@ module github.com/champ-oss/rds-iam-auth/terraform
 go 1.19
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.17.6
+	github.com/aws/aws-sdk-go-v2 v1.17.7
 	github.com/aws/aws-sdk-go-v2/config v1.18.16
-	github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.2.8
+	github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.2.9
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.30.1
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/gruntwork-io/terratest v0.41.15
