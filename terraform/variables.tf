@@ -1,3 +1,9 @@
+variable "alarms_email" {
+  description = "Email address to send alarms"
+  type        = string
+  default     = null
+}
+
 variable "db_iam_read_username" {
   description = "IAM read only username"
   type        = string
@@ -10,10 +16,28 @@ variable "db_iam_admin_username" {
   default     = "db_iam_admin"
 }
 
+variable "enable_alarms" {
+  description = "Enable CloudWatch metric alarms"
+  type        = bool
+  default     = true
+}
+
+variable "event_triggers_enabled" {
+  description = "Trigger based on RDS events"
+  type        = bool
+  default     = true
+}
+
 variable "git" {
   description = "Name of the Git repo"
   type        = string
   default     = "rds-iam-auth"
+}
+
+variable "max_receive_count" {
+  description = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sqs_queue"
+  type        = number
+  default     = 120
 }
 
 variable "private_subnet_ids" {
