@@ -43,7 +43,7 @@ func (s *Service) Run(message *events.SQSMessage, mysqlClient mysql_client.Mysql
 		return nil
 	}
 
-	if mySQLConnectionInfo.ClusterInstanceCount == 0 {
+	if mySQLConnectionInfo.InstanceCount == 0 {
 		log.Warningf("cluster: %s has no instances so processing will end.", rdsIdentifier)
 		return nil
 	}
@@ -80,13 +80,13 @@ func (s *Service) getDBClusterInfo(rdsIdentifier string) (common.MySQLConnection
 	}
 
 	mySQLConnectionInfo := common.MySQLConnectionInfo{
-		Endpoint:             *cluster.Endpoint,
-		Port:                 *cluster.Port,
-		Username:             *cluster.MasterUsername,
-		Database:             s.config.DefaultDatabase,
-		SecurityGroups:       common.GetSecurityGroupIds(cluster.VpcSecurityGroups),
-		IsClusterInstance:    false,
-		ClusterInstanceCount: len(cluster.DBClusterMembers),
+		Endpoint:          *cluster.Endpoint,
+		Port:              *cluster.Port,
+		Username:          *cluster.MasterUsername,
+		Database:          s.config.DefaultDatabase,
+		SecurityGroups:    common.GetSecurityGroupIds(cluster.VpcSecurityGroups),
+		IsClusterInstance: false,
+		InstanceCount:     len(cluster.DBClusterMembers),
 	}
 	log.Debugf("%+v", mySQLConnectionInfo)
 	return mySQLConnectionInfo, nil
@@ -100,11 +100,13 @@ func (s *Service) getDBInstanceInfo(rdsIdentifier string) (common.MySQLConnectio
 	}
 
 	mySQLConnectionInfo := common.MySQLConnectionInfo{
-		Endpoint:       *instance.Endpoint.Address,
-		Port:           instance.Endpoint.Port,
-		Username:       *instance.MasterUsername,
-		Database:       s.config.DefaultDatabase,
-		SecurityGroups: common.GetSecurityGroupIds(instance.VpcSecurityGroups),
+		Endpoint:          *instance.Endpoint.Address,
+		Port:              instance.Endpoint.Port,
+		Username:          *instance.MasterUsername,
+		Database:          s.config.DefaultDatabase,
+		SecurityGroups:    common.GetSecurityGroupIds(instance.VpcSecurityGroups),
+		IsClusterInstance: false,
+		InstanceCount:     1,
 	}
 
 	if instance.DBClusterIdentifier != nil {

@@ -142,6 +142,11 @@ func Test_Run_error_finding_password(t *testing.T) {
 		Port:           aws.Int32(1111),
 		MasterUsername: aws.String("user"),
 		DatabaseName:   aws.String("this"),
+		DBClusterMembers: []types.DBClusterMember{
+			{
+				DBInstanceIdentifier: aws.String("instance1"),
+			},
+		},
 	}, nil)
 
 	ssmClient.EXPECT().SearchByTag("cluster_identifier", "cluster1").Return([]string{}, nil)
@@ -166,6 +171,11 @@ func Test_Run_with_error_connecting_mysql(t *testing.T) {
 				VpcSecurityGroupId: aws.String("sg1"),
 			},
 		},
+		DBClusterMembers: []types.DBClusterMember{
+			{
+				DBInstanceIdentifier: aws.String("instance1"),
+			},
+		},
 	}, nil)
 
 	ssmClient.EXPECT().SearchByTag("cluster_identifier", "cluster1").Return([]string{}, nil)
@@ -188,6 +198,11 @@ func Test_Run_with_error_running_mysql_query(t *testing.T) {
 		VpcSecurityGroups: []types.VpcSecurityGroupMembership{
 			{
 				VpcSecurityGroupId: aws.String("sg1"),
+			},
+		},
+		DBClusterMembers: []types.DBClusterMember{
+			{
+				DBInstanceIdentifier: aws.String("instance1"),
 			},
 		},
 	}, nil)
