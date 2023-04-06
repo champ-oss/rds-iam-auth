@@ -68,7 +68,7 @@ module "aurora" {
 
 module "mysql" {
   depends_on               = [module.this] # for testing event-based triggers
-  source                   = "github.com/champ-oss/terraform-aws-mysql.git?ref=v1.0.165-29d9cd6"
+  source                   = "github.com/champ-oss/terraform-aws-mysql.git?ref=v1.0.167-4c54fc9"
   vpc_id                   = data.aws_vpcs.this.ids[0]
   private_subnet_ids       = data.aws_subnets.public.ids
   source_security_group_id = aws_security_group.test.id
