@@ -15,13 +15,14 @@ const RdsTypeClusterKey = "cluster"
 const RdsTypeInstanceKey = "instance"
 
 type MySQLConnectionInfo struct {
-	Endpoint          string
-	Port              int32
-	Username          string
-	Password          string
-	Database          string
-	SecurityGroups    []string
-	IsClusterInstance bool
+	Endpoint             string
+	Port                 int32
+	Username             string
+	Password             string
+	Database             string
+	SecurityGroups       []string
+	IsClusterInstance    bool
+	ClusterInstanceCount int
 }
 
 // ParseSqsMessage parses the RDS type and RDS identifier from the incoming SQS message body
