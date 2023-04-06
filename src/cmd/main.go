@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/aws/aws-lambda-go/events"
+	"encoding/json"
+	"fmt"
 	"github.com/aws/aws-lambda-go/lambda"
 	cfg "github.com/champ-oss/rds-iam-auth/config"
+	"github.com/champ-oss/rds-iam-auth/pkg/common"
 	"github.com/champ-oss/rds-iam-auth/pkg/rds_client"
 	"github.com/champ-oss/rds-iam-auth/pkg/sqs_client"
 	"github.com/champ-oss/rds-iam-auth/pkg/ssm_client"
@@ -27,35 +29,32 @@ func init() {
 	workerService = worker.NewService(config, rdsClient, ssmClient)
 }
 
-func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
+func handler(ctx context.Context, event json.RawMessage) error {
+	log.Debugf("event: %s", event)
 
-	if len(sqsEvent.Records) < 1 {
-		return schedulerService.Run()
-	}
+	if common.IsScheduledEvent(event) {
+		return schedulerService.Run(nil)
 
-	for _, message := range sqsEvent.Records {
-		log.Warning("triggered from sqs message")
-		if err := workerService.Run(message, nil); err != nil {
-			return err
+	} else if isEventBridgeRdsEvent, cloudwatchEvent := common.IsEventBridgeRdsEvent(event); isEventBridgeRdsEvent {
+		return schedulerService.Run(&cloudwatchEvent)
+
+	} else if isSqsEvent, sqsEvent := common.IsSqsEvent(event); isSqsEvent {
+		for _, message := range sqsEvent.Records {
+			if err := workerService.Run(&message, nil); err != nil {
+				return err
+			}
 		}
-	}
+		return nil
 
-	return nil
+	} else {
+		return fmt.Errorf("unable to recognize lambda event")
+	}
 }
 
 func main() {
 	if os.Getenv("AWS_LAMBDA_RUNTIME_API") == "" {
 		// Support running the code locally
-		if err := handler(context.TODO(), events.SQSEvent{
-			Records: []events.SQSMessage{
-				{
-					Body: "cluster|rds-iam-auth-20230208151203633200000014",
-				},
-				{
-					Body: "instance|rds-iam-auth",
-				},
-			},
-		}); err != nil {
+		if err := handler(context.TODO(), nil); err != nil {
 			panic(err)
 		}
 	} else {

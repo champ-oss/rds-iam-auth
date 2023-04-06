@@ -51,6 +51,7 @@ resource "aws_security_group" "test" {
 }
 
 module "aurora" {
+  depends_on                = [module.this] # for testing event-based triggers
   source                    = "github.com/champ-oss/terraform-aws-aurora.git?ref=v1.0.33-8c0c9f6"
   cluster_identifier_prefix = local.git
   git                       = local.git
@@ -62,9 +63,11 @@ module "aurora" {
   tags                      = local.tags
   publicly_accessible       = true
   cidr_blocks               = ["0.0.0.0/0"]
+  cluster_instance_count    = 1
 }
 
 module "mysql" {
+  depends_on               = [module.this] # for testing event-based triggers
   source                   = "github.com/champ-oss/terraform-aws-mysql.git?ref=v1.0.165-29d9cd6"
   vpc_id                   = data.aws_vpcs.this.ids[0]
   private_subnet_ids       = data.aws_subnets.public.ids
@@ -80,7 +83,10 @@ module "mysql" {
 }
 
 module "this" {
-  source             = "../../"
-  vpc_id             = data.aws_vpcs.this.ids[0]
-  private_subnet_ids = data.aws_subnets.private.ids
+  source              = "../../"
+  vpc_id              = data.aws_vpcs.this.ids[0]
+  private_subnet_ids  = data.aws_subnets.private.ids
+  schedule_expression = "cron(0 4 * * ? *)"
+  retry_delay_seconds = 30
+  max_receive_count   = 60
 }

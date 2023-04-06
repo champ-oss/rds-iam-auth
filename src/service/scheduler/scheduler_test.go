@@ -2,6 +2,7 @@ package scheduler
 
 import (
 	"fmt"
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/champ-oss/rds-iam-auth/mocks/mock_rds_client"
 	"github.com/champ-oss/rds-iam-auth/mocks/mock_sqs_client"
 	"github.com/golang/mock/gomock"
@@ -30,7 +31,7 @@ func Test_Run_no_error(t *testing.T) {
 	sqsClient.EXPECT().Send("instance|instance2").Return(nil)
 
 	svc := Service{nil, sqsClient, rdsClient}
-	assert.NoError(t, svc.Run())
+	assert.NoError(t, svc.Run(nil))
 }
 
 func Test_Run_with_error(t *testing.T) {
@@ -44,5 +45,21 @@ func Test_Run_with_error(t *testing.T) {
 	sqsClient.EXPECT().Send("cluster|cluster1").Return(fmt.Errorf("some error"))
 
 	svc := Service{nil, sqsClient, rdsClient}
-	assert.Errorf(t, svc.Run(), "some error")
+	assert.Errorf(t, svc.Run(nil), "some error")
+}
+
+func Test_Run_with_event(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	sqsClient := mock_sqs_client.NewMockSqsClientInterface(ctrl)
+	rdsClient := mock_rds_client.NewMockRdsClientInterface(ctrl)
+
+	sqsClient.EXPECT().Send("instance|instance2").Return(nil)
+
+	svc := Service{nil, sqsClient, rdsClient}
+	assert.NoError(t, svc.Run(&events.CloudWatchEvent{
+		DetailType: "RDS DB Instance Event",
+		Resources:  []string{"arn:aws:rds:us-east-2:1234567890:db:instance2"},
+	}))
 }
