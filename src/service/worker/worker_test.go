@@ -41,10 +41,11 @@ func Test_Run_with_cluster_no_error(t *testing.T) {
 	svc, rdsClient, ssmClient, mysqlClient := setUpMockService(t)
 
 	rdsClient.EXPECT().GetDBCluster("cluster1").Return(&types.DBCluster{
-		Endpoint:       aws.String("endpoint1"),
-		Port:           aws.Int32(1111),
-		MasterUsername: aws.String("user"),
-		DatabaseName:   aws.String("this"),
+		Endpoint:                         aws.String("endpoint1"),
+		Port:                             aws.Int32(1111),
+		MasterUsername:                   aws.String("user"),
+		DatabaseName:                     aws.String("this"),
+		IAMDatabaseAuthenticationEnabled: aws.Bool(true),
 		VpcSecurityGroups: []types.VpcSecurityGroupMembership{
 			{
 				VpcSecurityGroupId: aws.String("sg1"),
@@ -138,10 +139,11 @@ func Test_Run_error_finding_password(t *testing.T) {
 	svc, rdsClient, ssmClient, _ := setUpMockService(t)
 
 	rdsClient.EXPECT().GetDBCluster("cluster1").Return(&types.DBCluster{
-		Endpoint:       aws.String("endpoint1"),
-		Port:           aws.Int32(1111),
-		MasterUsername: aws.String("user"),
-		DatabaseName:   aws.String("this"),
+		Endpoint:                         aws.String("endpoint1"),
+		Port:                             aws.Int32(1111),
+		MasterUsername:                   aws.String("user"),
+		DatabaseName:                     aws.String("this"),
+		IAMDatabaseAuthenticationEnabled: aws.Bool(true),
 	}, nil)
 
 	ssmClient.EXPECT().SearchByTag("cluster_identifier", "cluster1").Return([]string{}, nil)
@@ -157,10 +159,11 @@ func Test_Run_with_error_connecting_mysql(t *testing.T) {
 	svc, rdsClient, ssmClient, _ := setUpMockService(t)
 
 	rdsClient.EXPECT().GetDBCluster("cluster1").Return(&types.DBCluster{
-		Endpoint:       aws.String("localhost"),
-		Port:           aws.Int32(65000),
-		MasterUsername: aws.String("user"),
-		DatabaseName:   aws.String("this"),
+		Endpoint:                         aws.String("localhost"),
+		Port:                             aws.Int32(65000),
+		MasterUsername:                   aws.String("user"),
+		DatabaseName:                     aws.String("this"),
+		IAMDatabaseAuthenticationEnabled: aws.Bool(true),
 		VpcSecurityGroups: []types.VpcSecurityGroupMembership{
 			{
 				VpcSecurityGroupId: aws.String("sg1"),
@@ -181,10 +184,11 @@ func Test_Run_with_error_running_mysql_query(t *testing.T) {
 	svc, rdsClient, ssmClient, mysqlClient := setUpMockService(t)
 
 	rdsClient.EXPECT().GetDBCluster("cluster1").Return(&types.DBCluster{
-		Endpoint:       aws.String("endpoint1"),
-		Port:           aws.Int32(1111),
-		MasterUsername: aws.String("user"),
-		DatabaseName:   aws.String("this"),
+		Endpoint:                         aws.String("endpoint1"),
+		Port:                             aws.Int32(1111),
+		MasterUsername:                   aws.String("user"),
+		DatabaseName:                     aws.String("this"),
+		IAMDatabaseAuthenticationEnabled: aws.Bool(true),
 		VpcSecurityGroups: []types.VpcSecurityGroupMembership{
 			{
 				VpcSecurityGroupId: aws.String("sg1"),

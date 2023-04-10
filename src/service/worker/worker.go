@@ -43,6 +43,11 @@ func (s *Service) Run(message *events.SQSMessage, mysqlClient mysql_client.Mysql
 		return nil
 	}
 
+	if !mySQLConnectionInfo.IAMDatabaseAuthenticationEnabled {
+		log.Warningf("IAM authentication has not been enabled so processing will end: %s ", rdsIdentifier)
+		return nil
+	}
+
 	mySQLConnectionInfo.Password, err = s.findPassword(rdsIdentifier)
 	if err != nil {
 		return err
@@ -75,12 +80,13 @@ func (s *Service) getDBClusterInfo(rdsIdentifier string) (common.MySQLConnection
 	}
 
 	mySQLConnectionInfo := common.MySQLConnectionInfo{
-		Endpoint:          *cluster.Endpoint,
-		Port:              *cluster.Port,
-		Username:          *cluster.MasterUsername,
-		Database:          s.config.DefaultDatabase,
-		SecurityGroups:    common.GetSecurityGroupIds(cluster.VpcSecurityGroups),
-		IsClusterInstance: false,
+		Endpoint:                         *cluster.Endpoint,
+		Port:                             *cluster.Port,
+		Username:                         *cluster.MasterUsername,
+		Database:                         s.config.DefaultDatabase,
+		SecurityGroups:                   common.GetSecurityGroupIds(cluster.VpcSecurityGroups),
+		IsClusterInstance:                false,
+		IAMDatabaseAuthenticationEnabled: *cluster.IAMDatabaseAuthenticationEnabled,
 	}
 	log.Debugf("%+v", mySQLConnectionInfo)
 	return mySQLConnectionInfo, nil
@@ -94,12 +100,13 @@ func (s *Service) getDBInstanceInfo(rdsIdentifier string) (common.MySQLConnectio
 	}
 
 	mySQLConnectionInfo := common.MySQLConnectionInfo{
-		Endpoint:          *instance.Endpoint.Address,
-		Port:              instance.Endpoint.Port,
-		Username:          *instance.MasterUsername,
-		Database:          s.config.DefaultDatabase,
-		SecurityGroups:    common.GetSecurityGroupIds(instance.VpcSecurityGroups),
-		IsClusterInstance: false,
+		Endpoint:                         *instance.Endpoint.Address,
+		Port:                             instance.Endpoint.Port,
+		Username:                         *instance.MasterUsername,
+		Database:                         s.config.DefaultDatabase,
+		SecurityGroups:                   common.GetSecurityGroupIds(instance.VpcSecurityGroups),
+		IsClusterInstance:                false,
+		IAMDatabaseAuthenticationEnabled: instance.IAMDatabaseAuthenticationEnabled,
 	}
 
 	if instance.DBClusterIdentifier != nil {
