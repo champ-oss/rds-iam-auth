@@ -80,6 +80,7 @@ module "mysql" {
   name                     = "test"
   publicly_accessible      = true
   cidr_blocks              = ["0.0.0.0/0"]
+  delete_automated_backups = true
 }
 
 module "this" {
