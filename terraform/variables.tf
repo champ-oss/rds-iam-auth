@@ -78,6 +78,12 @@ variable "ssm_search_patterns" {
   ]
 }
 
+variable "treat_missing_data" {
+  description = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm#treat_missing_data"
+  type        = string
+  default     = "ignore"
+}
+
 variable "vpc_id" {
   description = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group#vpc_id"
   type        = string
