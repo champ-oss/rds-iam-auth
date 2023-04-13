@@ -43,6 +43,7 @@ resource "aws_cloudwatch_metric_alarm" "deadletter" {
   alarm_description   = "${var.git} messages in deadletter SQS for RDS IAM auth"
   alarm_actions       = [aws_sns_topic.this.arn]
   ok_actions          = [aws_sns_topic.this.arn]
+  treat_missing_data  = var.treat_missing_data
   tags                = merge(local.tags, var.tags)
 
   dimensions = {
