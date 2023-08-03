@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.2.10
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/gruntwork-io/terratest v0.41.18
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.2
 )
 
