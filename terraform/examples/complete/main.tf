@@ -77,7 +77,6 @@ module "mysql" {
   skip_final_snapshot      = true
   protect                  = false
   tags                     = local.tags
-  name                     = "test"
   publicly_accessible      = true
   cidr_blocks              = ["0.0.0.0/0"]
   delete_automated_backups = true
