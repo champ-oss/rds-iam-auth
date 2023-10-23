@@ -52,7 +52,7 @@ resource "aws_security_group" "test" {
 
 module "aurora" {
   depends_on                = [module.this] # for testing event-based triggers
-  source                    = "github.com/champ-oss/terraform-aws-aurora.git?ref=v1.0.38-b8ce3cd"
+  source                    = "github.com/champ-oss/terraform-aws-aurora.git?ref=v1.0.46-68c285d"
   cluster_identifier_prefix = local.git
   git                       = local.git
   protect                   = false
@@ -68,7 +68,7 @@ module "aurora" {
 
 module "mysql" {
   depends_on               = [module.this] # for testing event-based triggers
-  source                   = "github.com/champ-oss/terraform-aws-mysql.git?ref=v1.0.167-4c54fc9"
+  source                   = "github.com/champ-oss/terraform-aws-mysql.git?ref=v1.0.169-b62841b"
   vpc_id                   = data.aws_vpcs.this.ids[0]
   private_subnet_ids       = data.aws_subnets.public.ids
   source_security_group_id = aws_security_group.test.id
@@ -77,7 +77,6 @@ module "mysql" {
   skip_final_snapshot      = true
   protect                  = false
   tags                     = local.tags
-  name                     = "test"
   publicly_accessible      = true
   cidr_blocks              = ["0.0.0.0/0"]
   delete_automated_backups = true
