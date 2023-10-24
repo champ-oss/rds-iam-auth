@@ -25,7 +25,7 @@ func TestTerraform(t *testing.T) {
 		},
 		Vars: map[string]interface{}{},
 	}
-	defer destroy(t, terraformOptions)
+	defer terraform.Destroy(t, terraformOptions)
 	terraform.InitAndApplyAndIdempotent(t, terraformOptions)
 
 	dbName := "mysql"
@@ -41,15 +41,6 @@ func TestTerraform(t *testing.T) {
 
 	assert.NoError(t, checkDatabaseConnection(testMysqlEndpoint, region, dbIamReadUsername, dbName))
 	assert.NoError(t, checkDatabaseConnection(testMysqlEndpoint, region, dbIamAdminUsername, dbName))
-}
-
-func destroy(t *testing.T, options *terraform.Options) {
-	targetedOptions := options
-	targetedOptions.Targets = []string{
-		"module.aurora",
-		"module.mysql",
-	}
-	terraform.Destroy(t, targetedOptions)
 }
 
 // getAWSConfig Logs in to AWS and return a config
