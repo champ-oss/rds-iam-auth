@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.18.21
 	github.com/aws/aws-sdk-go-v2/service/rds v1.42.3
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.24.7
-	github.com/aws/aws-sdk-go-v2/service/ssm v1.36.2
+	github.com/aws/aws-sdk-go-v2/service/ssm v1.39.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/golang/mock v1.6.0
 	github.com/sirupsen/logrus v1.9.3
