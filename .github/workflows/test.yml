@@ -33,7 +33,7 @@ jobs:
           terraform_version: 1.5.5 # https://github.com/hashicorp/terraform/releases
           terraform_wrapper: false
 
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: 1.19
 
