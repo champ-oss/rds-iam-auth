@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/aws/aws-sdk-go-v2 v1.24.0
 	github.com/aws/aws-sdk-go-v2/config v1.26.1
-	github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.3.4
+	github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.3.9
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/gruntwork-io/terratest v0.46.7
 	github.com/sirupsen/logrus v1.9.0
