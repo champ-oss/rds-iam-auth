@@ -15,7 +15,6 @@ fmt:
 
 tidy:
 	cd src && go mod tidy
-	cd terraform/test && go mod tidy
 
 download:
 	cd src && go mod download

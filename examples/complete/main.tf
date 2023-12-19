@@ -1,7 +1,3 @@
-terraform {
-  backend "s3" {}
-}
-
 provider "aws" {
   region = "us-east-2"
 }
@@ -89,4 +85,24 @@ module "this" {
   schedule_expression = "cron(0 4 * * ? *)"
   retry_delay_seconds = 30
   max_receive_count   = 60
+}
+
+output "test_mysql_endpoint" {
+  description = "MySQL endpoint"
+  value       = module.mysql.address
+}
+
+output "test_aurora_endpoint" {
+  description = "Aurora endpoint"
+  value       = module.aurora.endpoint
+}
+
+output "db_iam_read_username" {
+  description = "read only user"
+  value       = module.this.db_iam_read_username
+}
+
+output "db_iam_admin_username" {
+  description = "admin user"
+  value       = module.this.db_iam_admin_username
 }

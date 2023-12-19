@@ -57,12 +57,6 @@ variable "retry_delay_seconds" {
   default     = 30
 }
 
-variable "retry_timeout_minutes" {
-  description = "How many minutes to retry the IAM user setup before giving up"
-  type        = number
-  default     = 4 * 60
-}
-
 variable "schedule_expression" {
   description = "schedule expression using cron"
   type        = string
