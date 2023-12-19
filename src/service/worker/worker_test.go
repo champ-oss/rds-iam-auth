@@ -85,10 +85,11 @@ func Test_Run_with_instance_no_error(t *testing.T) {
 	rdsClient.EXPECT().GetDBInstance("instance1").Return(&types.DBInstance{
 		Endpoint: &types.Endpoint{
 			Address: aws.String("endpoint1"),
-			Port:    1111,
+			Port:    aws.Int32(1111),
 		},
-		MasterUsername: aws.String("user"),
-		DBName:         aws.String("this"),
+		MasterUsername:                   aws.String("user"),
+		DBName:                           aws.String("this"),
+		IAMDatabaseAuthenticationEnabled: aws.Bool(true),
 	}, nil)
 
 	ssmClient.EXPECT().SearchByTag("cluster_identifier", "instance1").Return([]string{}, nil)

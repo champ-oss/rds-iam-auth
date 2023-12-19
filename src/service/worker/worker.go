@@ -101,12 +101,12 @@ func (s *Service) getDBInstanceInfo(rdsIdentifier string) (common.MySQLConnectio
 
 	mySQLConnectionInfo := common.MySQLConnectionInfo{
 		Endpoint:                         *instance.Endpoint.Address,
-		Port:                             instance.Endpoint.Port,
+		Port:                             *instance.Endpoint.Port,
 		Username:                         *instance.MasterUsername,
 		Database:                         s.config.DefaultDatabase,
 		SecurityGroups:                   common.GetSecurityGroupIds(instance.VpcSecurityGroups),
 		IsClusterInstance:                false,
-		IAMDatabaseAuthenticationEnabled: instance.IAMDatabaseAuthenticationEnabled,
+		IAMDatabaseAuthenticationEnabled: *instance.IAMDatabaseAuthenticationEnabled,
 	}
 
 	if instance.DBClusterIdentifier != nil {
