@@ -87,46 +87,14 @@ module "this" {
   max_receive_count   = 60
 }
 
-output "region" {
-  description = "AWS region"
-  value       = module.this.region
-}
-
 output "test_mysql_endpoint" {
   description = "MySQL endpoint"
   value       = module.mysql.address
 }
 
-output "test_mysql_master_username" {
-  description = "MySQL master user"
-  value       = module.mysql.master_username
-}
-
-output "test_mysql_master_password" {
-  description = "MySQL master password"
-  value       = module.mysql.password
-  sensitive   = true
-}
-
 output "test_aurora_endpoint" {
   description = "Aurora endpoint"
   value       = module.aurora.endpoint
-}
-
-output "test_aurora_master_username" {
-  description = "Aurora master user"
-  value       = module.aurora.master_username
-}
-
-output "test_aurora_master_password" {
-  description = "Aurora master password"
-  value       = module.aurora.master_password
-  sensitive   = true
-}
-
-output "function_name" {
-  description = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function#function_name"
-  value       = module.this.function_name
 }
 
 output "db_iam_read_username" {
