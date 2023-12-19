@@ -1,5 +1,6 @@
 output "region" {
-  value = data.aws_region.this.name
+  description = "AWS region name"
+  value       = data.aws_region.this.name
 }
 
 output "function_name" {
@@ -8,9 +9,11 @@ output "function_name" {
 }
 
 output "db_iam_read_username" {
-  value = var.db_iam_read_username
+  description = "read only username"
+  value       = var.db_iam_read_username
 }
 
 output "db_iam_admin_username" {
-  value = var.db_iam_admin_username
+  description = "admin username"
+  value       = var.db_iam_admin_username
 }
