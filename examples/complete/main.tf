@@ -48,7 +48,7 @@ resource "aws_security_group" "test" {
 
 module "aurora" {
   depends_on                = [module.this] # for testing event-based triggers
-  source                    = "github.com/champ-oss/terraform-aws-aurora.git?ref=v1.0.47-10ef04f"
+  source                    = "github.com/champ-oss/terraform-aws-aurora.git?ref=v1.0.52-2896b7e"
   cluster_identifier_prefix = local.git
   git                       = local.git
   protect                   = false
