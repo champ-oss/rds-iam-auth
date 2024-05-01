@@ -1,5 +1,5 @@
 module "lambda" {
-  source              = "github.com/champ-oss/terraform-aws-lambda.git?ref=v1.0.140-1e30549"
+  source              = "github.com/champ-oss/terraform-aws-lambda.git?ref=v1.0.142-273b055"
   git                 = var.git
   name                = "rds-iam-auth"
   description         = "https://github.com/champ-oss/rds-iam-auth"
